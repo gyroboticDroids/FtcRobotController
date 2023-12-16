@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -17,6 +18,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.hardware.ServoImpl;
 
 @TeleOp(name="RobotController")
 public class RobotController extends LinearOpMode{
@@ -38,6 +41,7 @@ public class RobotController extends LinearOpMode{
     Servo rightGripper;
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
+    Servo droneLauncher;
 
     IMU imu;
 
@@ -73,9 +77,10 @@ public class RobotController extends LinearOpMode{
         arm = hardwareMap.servo.get("armServo");
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
+        droneLauncher = hardwareMap.servo.get("droneLaunch");
 
-        leftSensor = hardwareMap.get(DistanceSensor.class, "leftCheck");
-        rightSensor = hardwareMap.get(DistanceSensor.class, "rightCheck");
+        leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
+        rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
 
         ConfigureG();
 
@@ -86,6 +91,8 @@ public class RobotController extends LinearOpMode{
         double slowingDown = 4;
 
         while (opModeIsActive()) {
+
+            droneLauncher.setPosition(0);
 
             if(gamepad1.b){
                 slowingDown = 4;
@@ -181,33 +188,36 @@ public class RobotController extends LinearOpMode{
     double armPos = 0;
     public void AttachmentController()
     {
+//        arm.scaleRange(0.18, 0.36);
+
         double slidePosError, slidePower;
+        double slidePosError2, slidePower2;
         if(gamepad2.a)
         {
-            slidePos = 300;
-            armPos = 0.5;
+            slidePos = 950;
+            armPos = 0.357;
         } else if (gamepad2.b)
         {
-            slidePos = 1500;
-            armPos = 0.5;
+            slidePos = 1800;
+            armPos = 0.357;
         } else if (gamepad2.x)
         {
-            slidePos = 2300;
-            armPos = 0.5;
+            slidePos = 2550;
+            armPos = 0.357;
         } else if (gamepad2.y)
         {
-            slidePos = 3000;
-            armPos = 0.5;
+            slidePos = 3050;
+            armPos = 0.357;
         }
 
         if(gamepad2.dpad_down)
         {
             slidePos = 0;
-            armPos = 0;
+            armPos = 0.18;
         }
 
-        slidePos += -gamepad2.left_stick_y * 15;
-        armPos += gamepad2.right_stick_y * 0.05;
+        slidePos += -gamepad2.left_stick_y * 45;
+        armPos += -gamepad2.right_stick_y * 0.05;
 
         slidePos = Math.min(Math.max(slidePos, 0), 3070);
 
@@ -218,25 +228,44 @@ public class RobotController extends LinearOpMode{
             slideMotor2.setPower(0);
         }
         else{
+
+
             //slideMotor1.setPower(0.3);
             //slideMotor2.setPower(0.3);
 
             //slideMotor1.setTargetPosition(slidePos);
             //slideMotor2.setTargetPosition(slidePos);
+            if(gamepad2.back){
+                slideMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            }
 
-            slidePosError = slidePos - slideMotor1.getCurrentPosition();
-            slidePower = slidePosError * 0.9/500;
-            slidePower = Math.min(Math.max(slidePower, -0.3), 0.4);
+            if(gamepad2.start){
+                slidePos = 1000;
 
-            slideMotor1.setPower(slidePower);
-            slideMotor2.setPower(slidePower);
-            telemetry.addData("slidePosError", slidePosError);
+                slidePosError2 = slidePos - slideMotor1.getCurrentPosition();
+                slidePower2 = slidePosError2;
+                slidePower2 = Math.min(Math.max(slidePower2, -0.75), 0.75);
+
+                slideMotor1.setPower(slidePower2);
+                slideMotor2.setPower(slidePower2);
+
+
+            }else {
+                slidePosError = slidePos - slideMotor1.getCurrentPosition();
+                slidePower = slidePosError * 3 / 500;
+                slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
+
+                slideMotor1.setPower(slidePower);
+                slideMotor2.setPower(slidePower);
+                telemetry.addData("slidePosError", slidePosError);
+            }
+
         }
         telemetry.addData("slideMotor1 Power", slideMotor1.getPower());
         telemetry.addData("slidePosition", slidePos);
 
         if(gamepad2.left_bumper){
-            leftGripper.setPosition(0.5);
+            leftGripper.setPosition(0);
         }
 
         if(gamepad2.right_bumper){
@@ -248,10 +277,12 @@ public class RobotController extends LinearOpMode{
         }
 
         if(gamepad2.left_trigger > 0){
-            leftGripper.setPosition(0);
+            leftGripper.setPosition(0.5);
         }
 
         arm.setPosition(armPos);
+
+        telemetry.addData("Arm pos", armPos);
     }
 
     public void ConfigureG()
