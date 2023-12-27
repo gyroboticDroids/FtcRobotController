@@ -80,8 +80,6 @@ public class TestTickDistance extends LinearOpMode {
             telemetry.addData("Pod 3", frontRightMotor.getCurrentPosition());
             telemetry.addData("Pod 4", rearRightMotor.getCurrentPosition());
 
-            telemetry.addData("Pod 3", frontRightMotor.getCurrentPosition());
-            telemetry.addData("Pod 4", rearRightMotor.getCurrentPosition());
 
 
             telemetry.update();
