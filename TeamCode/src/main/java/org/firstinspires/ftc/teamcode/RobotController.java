@@ -21,19 +21,6 @@ import java.util.List;
 
 @TeleOp(name="RobotController")
 public class RobotController extends LinearOpMode{
-    double GRIPPER_LEFT_OPEN_POSITION = 0;
-    double GRIPPER_LEFT_CLOSE_POSITION = 0.5;
-    double GRIPPER_RIGHT_OPEN_POSITION = 0.5;
-    double GRIPPER_RIGHT_CLOSE_POSITION = 0;
-    double DRONE_START_POSITION = 0.696;
-    double DRONE_RELEASE_POSITION = 0.248;
-
-    int SLIDE_LOW_POS = 950;
-    int SLIDE_MEDIUM_POS = 2000;
-    int SLIDE_HIGH_POS = 3050;
-
-    double ARM_UP_POS = 0.744;
-    double ARM_DOWN_POS = 0.501;
     // Variables used for auto turn
     double turnError = 0;
     double turnSpeed = 0;
@@ -90,9 +77,9 @@ public class RobotController extends LinearOpMode{
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
 
-        droneLauncher.setPosition(DRONE_START_POSITION);
-        leftGripper.setPosition(GRIPPER_LEFT_OPEN_POSITION);
-        rightGripper.setPosition(GRIPPER_RIGHT_OPEN_POSITION);
+        droneLauncher.setPosition(Constants.DRONE_START_POSITION);
+        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+        rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
 
         waitForStart();
 
@@ -107,7 +94,7 @@ public class RobotController extends LinearOpMode{
             Pose2d myPose = myLocalizer.getPoseEstimate();
 
             if ((gamepad2.dpad_up)){
-                droneLauncher.setPosition(DRONE_RELEASE_POSITION);
+                droneLauncher.setPosition(Constants.DRONE_RELEASE_POSITION);
             }
 
             if(gamepad1.b || gamepad1.a){
@@ -200,13 +187,13 @@ public class RobotController extends LinearOpMode{
         double slidePosError2, slidePower2;
 
         if(gamepad2.a) {
-            slidePos = SLIDE_LOW_POS;
+            slidePos = Constants.SLIDE_LOW_POS;
             armPos = true;
         } else if (gamepad2.b) {
-            slidePos = SLIDE_MEDIUM_POS;
+            slidePos = Constants.SLIDE_MEDIUM_POS;
             armPos = true;
         } else if (gamepad2.y) {
-            slidePos = SLIDE_HIGH_POS;
+            slidePos = Constants.SLIDE_HIGH_POS;
             armPos = true;
         }
 
@@ -254,22 +241,22 @@ public class RobotController extends LinearOpMode{
         telemetry.addData("slidePosition", slidePos);
 
         if(gamepad2.left_bumper){
-            leftGripper.setPosition(GRIPPER_LEFT_OPEN_POSITION);
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
         }
 
         if(gamepad2.right_bumper){
-            rightGripper.setPosition(GRIPPER_RIGHT_OPEN_POSITION);
+            rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
         }
 
         if(gamepad2.right_trigger > 0.5){
-            rightGripper.setPosition(GRIPPER_RIGHT_CLOSE_POSITION);
+            rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         }
 
         if(gamepad2.left_trigger > 0.5){
-            leftGripper.setPosition(GRIPPER_LEFT_CLOSE_POSITION);
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         }
 
-        arm.setPosition(Ramp(ARM_DOWN_POS, ARM_UP_POS, armPos));
+        arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armPos));
 
         telemetry.addData("Arm pos", armPos);
     }
