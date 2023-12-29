@@ -1,41 +1,38 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
-@Autonomous(name="TestAutonomous")
-public class TestAutonomous extends LinearOpMode {
-
+@Autonomous(name="Red Left Auto Old")
+@Disabled
+public class RedLeftAutoOld extends LinearOpMode{
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
     Servo leftGripper;
     Servo rightGripper;
-    DcMotor slideMotor1;
-    DcMotor slideMotor2;
-    Pose2d selectPose = new Pose2d(0,0,0);
-    double selectTurn = 0;
-    double currentHeading = 0;
-    double boardOffset = 0;
+    Pose2d currentPose;
+    int purplePos;
     boolean armUp = false;
     int slidePos;
     double rampPos = 0.501;
     Servo arm;
     double slidePosError;
     double slidePower;
-
-
+    DcMotor slideMotor1;
+    DcMotor slideMotor2;
+    double dist;
     @Override
-    public void runOpMode() throws InterruptedException
-    {
+    public void runOpMode() throws InterruptedException {
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
 
@@ -60,54 +57,87 @@ public class TestAutonomous extends LinearOpMode {
         slideMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Pose2d startPose = new Pose2d(-38.25, -63.75, Math.toRadians(90));
-        drive.setPoseEstimate(startPose);
 
         waitForStart();
 
-        TrajectorySequence approachSpikeMarks = drive.trajectorySequenceBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(-35, -30.25, startPose.getHeading()), startPose.getHeading())
-                .addDisplacementMarker(() -> {
-                    if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
-                        selectPose = new Pose2d(-39, -31.25, Math.toRadians(180));
-                        selectTurn = 90;
-                        boardOffset = 6.25;
-                    } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
-                        selectPose = new Pose2d(-32, -31.25,0);
-                        selectTurn = -90;
-                        boardOffset = -6.25;
-                    } else {
-                        selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
-                        selectTurn = 0;
-                        boardOffset = 0;
-                    }
-                })
+        TrajectorySequence approachSpikeMarks = drive.trajectorySequenceBuilder(new Pose2d(-38.5, -63.75, Math.toRadians(-90)))
+                .strafeRight(3)
+                .forward(32.5)
                 .build();
+
         drive.followTrajectorySequence(approachSpikeMarks);
 
-        telemetry.addData("Board Offset", boardOffset);
-        telemetry.update();
+        if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
+            purplePos = 1;
+            dist = -4;
+            TrajectorySequence placePurpleLeft = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    .turn(Math.toRadians(90))
+                    .forward(3.5)
+                    .build();
 
-        TrajectorySequence placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
-                .turn(Math.toRadians(selectTurn))
-                .lineToLinearHeading(selectPose)
-                .addDisplacementMarker(() -> {
-                    leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
-                })
-                .back(4.5)
-                .lineToLinearHeading(new Pose2d(-35.5, -48, selectPose.getHeading()))
-                .turn(Math.toRadians(179.999)-selectPose.getHeading())
-                .lineToLinearHeading(new Pose2d(-58,-48, Math.toRadians(180)))
-                .turn(Math.toRadians(-90))
-                .lineToLinearHeading(new Pose2d(-58,-9, Math.toRadians(90)))
-                .turn(Math.toRadians(-90))
-                .lineToLinearHeading(new Pose2d(-9,-9,0))
-                .waitSeconds(1)
-                .lineToLinearHeading(new Pose2d(35,-9,Math.toRadians(0)))
-                .lineToConstantHeading(new Vector2d(43, -30 + boardOffset))
+            drive.followTrajectorySequence(placePurpleLeft);
+
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+
+            TrajectorySequence backLeft = drive.trajectorySequenceBuilder(placePurpleLeft.end())
+                    .waitSeconds(1)
+                    .back(3.5)
+                    .strafeLeft(28)
+                    .turn(Math.toRadians(180))
+                    .build();
+
+            drive.followTrajectorySequence(backLeft);
+
+            currentPose = backLeft.end();
+
+        } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
+            purplePos = 2;
+            dist = 4;
+            TrajectorySequence placePurpleRight = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    .turn(Math.toRadians(-90))
+                    .forward(3.5)
+                    .build();
+
+            drive.followTrajectorySequence(placePurpleRight);
+
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+
+            TrajectorySequence backRight = drive.trajectorySequenceBuilder(placePurpleRight.end())
+                    .waitSeconds(1)
+                    .back(3.5)
+                    .strafeRight(28)
+                    .build();
+
+            drive.followTrajectorySequence(backRight);
+
+            currentPose = backRight.end();
+
+        } else {
+            purplePos = 3;
+            dist = 0;
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+            TrajectorySequence back = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    .back(28)
+                    .turn(Math.toRadians(-90))
+                    .build();
+
+            drive.followTrajectorySequence(back);
+
+            currentPose = back.end();
+        }
+
+
+        TrajectorySequence driveToBoard = drive.trajectorySequenceBuilder(currentPose)
+                .back(23.5)
+                .strafeLeft(50)
+                .forward(47)
+                .waitSeconds(0.5)
+                .forward(47)
+                .strafeRight(26 + dist)
+                .forward(5)
                 .build();
 
-        drive.followTrajectorySequence(placePurplePixel);
+        drive.followTrajectorySequence(driveToBoard);
 
         slidePos = 600;
         armUp = true;
@@ -126,20 +156,23 @@ public class TestAutonomous extends LinearOpMode {
         slideMotor1.setPower(0);
         slideMotor2.setPower(0);
 
-        TrajectorySequence dropOnBoard = drive.trajectorySequenceBuilder(placePurplePixel.end())
-                .forward(6.5)
+        TrajectorySequence placeYellow = drive.trajectorySequenceBuilder(driveToBoard.end())
+                .forward(9)
                 .build();
-        drive.followTrajectorySequence(dropOnBoard);
+        drive.followTrajectorySequence(placeYellow);
+        currentPose = placeYellow.end();
+
 
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
 
-        TrajectorySequence backUp = drive.trajectorySequenceBuilder(dropOnBoard.end())
+        TrajectorySequence backUp = drive.trajectorySequenceBuilder(currentPose)
                 .waitSeconds(0.4)
                 .back(5)
                 .build();
 
         drive.followTrajectorySequence(backUp);
     }
+
     public double Ramp(double firstPos, double secondPos, boolean selectPos)
     {
         if(selectPos){
