@@ -21,13 +21,6 @@ import java.util.List;
 
 @TeleOp(name="RobotController")
 public class RobotController extends LinearOpMode{
-    // Variables used for auto turn
-    double turnError = 0;
-    double turnSpeed = 0;
-    double turnSetpoint = 0;
-    double turnFeedback = 0;
-    double turnOffset = 0;
-
     DcMotor frontLeftMotor;
     DcMotor rearLeftMotor;
     DcMotor frontRightMotor;
@@ -40,6 +33,13 @@ public class RobotController extends LinearOpMode{
     Servo droneLauncher;
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
+
+    // Variables used for auto turn
+    double turnError = 0;
+    double turnSpeed = 0;
+    double turnSetpoint = 0;
+    double turnFeedback = 0;
+    double turnOffset = 0;
 
     boolean fieldOriented = true;
 
@@ -81,6 +81,8 @@ public class RobotController extends LinearOpMode{
         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
 
+        myLocalizer.setPoseEstimate(Constants.autoEndPose);
+        turnSetpoint = Math.toDegrees(Constants.autoEndPose.getHeading()) - 90;
         waitForStart();
 
         if (isStopRequested()) return;
@@ -118,7 +120,7 @@ public class RobotController extends LinearOpMode{
             AttachmentController();
 
             if (gamepad1.back){
-                myLocalizer.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(0)));
+                myLocalizer.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
                 turnSetpoint = 0;
             }
             else{
@@ -130,7 +132,7 @@ public class RobotController extends LinearOpMode{
                 }
 
                 if(fieldOriented){
-                    turnFeedback = myPose.getHeading();
+                    turnFeedback = myPose.getHeading() - Math.toRadians(90);
                     Direction();
                     GyroTurn();
                 }
@@ -166,12 +168,12 @@ public class RobotController extends LinearOpMode{
                 }
 
                 telemetry.addData("Field Oriented?", fieldOriented);
-
+                telemetry.addLine();
                 telemetry.addData("Turn Setpoint", turnSetpoint);
                 telemetry.addData("Turn Heading", Math.toDegrees(turnFeedback));
                 telemetry.addData("Turn Error", turnError);
                 telemetry.addData("Turn Speed", turnSpeed);
-
+                telemetry.addLine();
                 telemetry.addData("Left Distance Sensor", leftSensor.getDistance(DistanceUnit.CM));
                 telemetry.addData("Right Distance Sensor", rightSensor.getDistance(DistanceUnit.CM));
 
@@ -181,10 +183,10 @@ public class RobotController extends LinearOpMode{
     }
     int slidePos = 0;
     boolean armPos = false;
+    boolean slideResetOneShot = false;
     public void AttachmentController()
     {
         double slidePosError, slidePower;
-        double slidePosError2, slidePower2;
 
         if(gamepad2.a) {
             slidePos = Constants.SLIDE_LOW_POS;
@@ -207,68 +209,70 @@ public class RobotController extends LinearOpMode{
 
         slidePos = Math.min(Math.max(slidePos, 0), 3070);
 
-        if(slideMotor1.getCurrentPosition() < 10 && slidePos < 5)
-        {
+        if(gamepad2.back){
+            slideResetOneShot = true;
+            slideMotor1.setPower(-0.3);
+            slideMotor2.setPower(-0.3);
+        }
+        else if(slideResetOneShot){
+            slideMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            slideMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            slideResetOneShot = false;
+        }
+        else if(slideMotor1.getCurrentPosition() < 10 && slidePos < 5){
             slideMotor1.setPower(0);
             slideMotor2.setPower(0);
         }
-        else{
-            if(gamepad2.back){
-                slideMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            }
+        else if(gamepad2.start) {
+            slidePos = 1000;
 
-            if(gamepad2.start){
-                slidePos = 1000;
+            slidePosError = slidePos - slideMotor1.getCurrentPosition();
+            slidePower = slidePosError;
+            slidePower = Math.min(Math.max(slidePower, -0.75), 0.75);
 
-                slidePosError2 = slidePos - slideMotor1.getCurrentPosition();
-                slidePower2 = slidePosError2;
-                slidePower2 = Math.min(Math.max(slidePower2, -0.75), 0.75);
-
-                slideMotor1.setPower(slidePower2);
-                slideMotor2.setPower(slidePower2);
-
-            }else {
-                slidePosError = slidePos - slideMotor1.getCurrentPosition();
-                slidePower = slidePosError * 3 / 500;
-                slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
-
-                slideMotor1.setPower(slidePower);
-                slideMotor2.setPower(slidePower);
-                telemetry.addData("slidePosError", slidePosError);
-            }
+            slideMotor1.setPower(slidePower);
+            slideMotor2.setPower(slidePower);
         }
+        else {
+            slidePosError = slidePos - slideMotor1.getCurrentPosition();
+            slidePower = slidePosError * 3 / 500;
+            slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
+
+            slideMotor1.setPower(slidePower);
+            slideMotor2.setPower(slidePower);
+            telemetry.addData("slidePosError", slidePosError);
+        }
+
         telemetry.addData("slideMotor1 Power", slideMotor1.getPower());
         telemetry.addData("slidePosition", slidePos);
+        telemetry.addData("Current Slide Position", slideMotor1.getCurrentPosition());
 
         if(gamepad2.left_bumper){
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+        }
+        else if(gamepad2.left_trigger > 0.5){
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         }
 
         if(gamepad2.right_bumper){
             rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
         }
-
-        if(gamepad2.right_trigger > 0.5){
+        else if(gamepad2.right_trigger > 0.5){
             rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         }
-
-        if(gamepad2.left_trigger > 0.5){
-            leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
-        }
-
         arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armPos));
 
         telemetry.addData("Arm pos", armPos);
     }
 
-    double rampPos = 0.501;
+    double rampPos = Constants.ARM_DOWN_POS;
     public double Ramp(double firstPos, double secondPos, boolean selectPos)
     {
         if(selectPos){
-            rampPos += 0.01;
+            rampPos += 0.015;
         }
         else{
-            rampPos -= 0.01;
+            rampPos -= 0.015;
         }
         rampPos = Math.min(Math.max(rampPos, firstPos), secondPos);
 
@@ -288,12 +292,7 @@ public class RobotController extends LinearOpMode{
         // Rotation sensitivity
         turnSpeed = 0.04 * turnError;
         // Keeps turning speed in a range
-        if(turnSpeed > 0.4){
-            turnSpeed = 0.4;
-        }
-        else if(turnSpeed < -0.4){
-            turnSpeed = -0.4;
-        }
+        turnSpeed = Math.min(Math.max(turnSpeed, -0.4), 0.4);
     }
 
     public void Direction()
