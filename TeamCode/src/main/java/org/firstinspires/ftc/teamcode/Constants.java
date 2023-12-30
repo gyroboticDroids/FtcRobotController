@@ -17,5 +17,6 @@ public class Constants {
     public static double ARM_UP_POS = 0.744;
     public static double ARM_DOWN_POS = 0.501;
     public static Pose2d autoEndPose = new Pose2d(0, 0, Math.toRadians(0));
+    public static boolean blueAuto = false;
 
 }

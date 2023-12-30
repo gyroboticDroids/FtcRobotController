@@ -46,6 +46,9 @@ public class RobotController extends LinearOpMode{
     @Override
     public void runOpMode() throws InterruptedException
     {
+        double y = 0;
+        double x = 0;
+
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
@@ -77,13 +80,19 @@ public class RobotController extends LinearOpMode{
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
 
+        myLocalizer.setPoseEstimate(Constants.autoEndPose);
+        if(Constants.blueAuto){
+            turnSetpoint = Math.toDegrees(Constants.autoEndPose.getHeading()) + 90;
+        }
+        else{
+            turnSetpoint = Math.toDegrees(Constants.autoEndPose.getHeading()) - 90;
+        }
+
+        waitForStart();
+
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
-
-        myLocalizer.setPoseEstimate(Constants.autoEndPose);
-        turnSetpoint = Math.toDegrees(Constants.autoEndPose.getHeading()) - 90;
-        waitForStart();
 
         if (isStopRequested()) return;
 
@@ -108,8 +117,8 @@ public class RobotController extends LinearOpMode{
                 slowDownTurning = 1;
             }
 
-            double y = (-gamepad1.left_stick_y / slowingDown);
-            double x = (gamepad1.left_stick_x / slowingDown);
+            y = (-gamepad1.left_stick_y / slowingDown);
+            x = (gamepad1.left_stick_x / slowingDown);
             turnOffset = (gamepad1.left_trigger - gamepad1.right_trigger) * (2.5 / slowDownTurning);
 
             frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -122,6 +131,7 @@ public class RobotController extends LinearOpMode{
             if (gamepad1.back){
                 myLocalizer.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
                 turnSetpoint = 0;
+                Constants.blueAuto = false;
             }
             else{
                 if(gamepad1.start && !fieldOrientedToggle && fieldOriented){
@@ -137,15 +147,21 @@ public class RobotController extends LinearOpMode{
                 }
 
                 if(fieldOriented){
-                    turnFeedback = myPose.getHeading() - Math.toRadians(90);
+                    if(Constants.blueAuto){
+                        turnFeedback = myPose.getHeading() + Math.toRadians(90);
+                    }
+                    else{
+                        turnFeedback = myPose.getHeading() - Math.toRadians(90);
+                    }
+
                     Direction();
                     GyroTurn();
                 }
                 else {
+                    turnOffset /= 4;
                     turnSpeed = turnOffset;
                     turnFeedback = 0;
                     turnSetpoint = myPose.getHeading();
-                    turnOffset /= 2;
                 }
 
                 double rotX = x * Math.cos(-turnFeedback) - y * Math.sin(-turnFeedback);

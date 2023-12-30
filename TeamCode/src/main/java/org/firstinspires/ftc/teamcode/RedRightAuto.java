@@ -107,7 +107,7 @@ public class RedRightAuto extends LinearOpMode {
         drive.followTrajectorySequence(placePurplePixel);
 
         //Raise slide and arm
-        slidePos = 600;
+        slidePos = 320;
         armUp = true;
         while ((slideMotor1.getCurrentPosition() < slidePos - 30 || rampPos < 0.743) && opModeIsActive()) {
             arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
@@ -169,6 +169,7 @@ public class RedRightAuto extends LinearOpMode {
         drive.followTrajectorySequence(moveToCorner);
 
         Constants.autoEndPose = moveToCorner.end();
+        Constants.blueAuto = false;
     }
     public double Ramp(double firstPos, double secondPos, boolean selectPos)
     {

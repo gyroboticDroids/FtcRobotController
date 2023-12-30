@@ -175,6 +175,7 @@ public class BlueRightAuto extends LinearOpMode {
         slideMotor2.setPower(0);
 
         Constants.autoEndPose = dropOnBoard.end();
+        Constants.blueAuto = true;
     }
     public double Ramp(double firstPos, double secondPos, boolean selectPos)
     {
