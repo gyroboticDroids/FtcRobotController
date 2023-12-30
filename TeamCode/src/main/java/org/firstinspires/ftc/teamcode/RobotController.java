@@ -40,8 +40,8 @@ public class RobotController extends LinearOpMode{
     double turnSetpoint = 0;
     double turnFeedback = 0;
     double turnOffset = 0;
-
     boolean fieldOriented = true;
+    boolean fieldOrientedToggle = false;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -99,7 +99,7 @@ public class RobotController extends LinearOpMode{
                 droneLauncher.setPosition(Constants.DRONE_RELEASE_POSITION);
             }
 
-            if(gamepad1.b || gamepad1.a){
+            if(Math.abs(gamepad1.right_stick_x) > 0.3 || Math.abs(gamepad1.right_stick_y) > 0.3 || gamepad1.right_stick_button){
                 slowingDown = 4;
                 slowDownTurning = 3;
             }
@@ -124,11 +124,16 @@ public class RobotController extends LinearOpMode{
                 turnSetpoint = 0;
             }
             else{
-                if(gamepad1.x){
+                if(gamepad1.start && !fieldOrientedToggle && fieldOriented){
                     fieldOriented = false;
+                    fieldOrientedToggle = true;
                 }
-                else if(gamepad1.y){
+                else if(gamepad1.start && !fieldOrientedToggle && !fieldOriented){
                     fieldOriented = true;
+                    fieldOrientedToggle = true;
+                }
+                else if(!gamepad1.start){
+                    fieldOrientedToggle = false;
                 }
 
                 if(fieldOriented){
@@ -140,6 +145,7 @@ public class RobotController extends LinearOpMode{
                     turnSpeed = turnOffset;
                     turnFeedback = 0;
                     turnSetpoint = myPose.getHeading();
+                    turnOffset /= 2;
                 }
 
                 double rotX = x * Math.cos(-turnFeedback) - y * Math.sin(-turnFeedback);
@@ -219,15 +225,17 @@ public class RobotController extends LinearOpMode{
             slideMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             slideResetOneShot = false;
         }
-        else if(slideMotor1.getCurrentPosition() < 10 && slidePos < 5){
+        else if(slideMotor1.getCurrentPosition() < 50 && slidePos < 5){
             slideMotor1.setPower(0);
             slideMotor2.setPower(0);
+            slideMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            slideMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
         else if(gamepad2.start) {
             slidePos = 1000;
 
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
-            slidePower = slidePosError;
+            slidePower = slidePosError * 5 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.75), 0.75);
 
             slideMotor1.setPower(slidePower);
@@ -235,7 +243,7 @@ public class RobotController extends LinearOpMode{
         }
         else {
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
-            slidePower = slidePosError * 3 / 500;
+            slidePower = slidePosError * 1 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
 
             slideMotor1.setPower(slidePower);
@@ -297,16 +305,16 @@ public class RobotController extends LinearOpMode{
 
     public void Direction()
     {
-        if(gamepad1.dpad_left){
+        if(gamepad1.x){
             turnSetpoint = 90;
         }
-        else if(gamepad1.dpad_up){
+        else if(gamepad1.y){
             turnSetpoint = 0;
         }
-        else if(gamepad1.dpad_right){
+        else if(gamepad1.b){
             turnSetpoint = 270;
         }
-        else if(gamepad1.dpad_down){
+        else if(gamepad1.a){
             turnSetpoint = 180;
         }
         else{
