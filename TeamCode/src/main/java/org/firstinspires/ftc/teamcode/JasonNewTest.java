@@ -32,6 +32,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -55,6 +57,8 @@ public class JasonNewTest extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
+    Servo arm;
+    ServoImplEx armImplEx;
 
     @Override
     public void runOpMode() {
@@ -65,6 +69,9 @@ public class JasonNewTest extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        arm = hardwareMap.servo.get("armServo");
+        armImplEx = (ServoImplEx) arm;
+        armImplEx.setPwmDisable();
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 

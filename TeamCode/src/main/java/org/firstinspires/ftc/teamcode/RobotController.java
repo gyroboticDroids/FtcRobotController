@@ -21,6 +21,7 @@ import java.util.List;
 
 @TeleOp(name="RobotController")
 public class RobotController extends LinearOpMode{
+    // Initializing motors and variables
     DcMotor frontLeftMotor;
     DcMotor rearLeftMotor;
     DcMotor frontRightMotor;
@@ -53,7 +54,7 @@ public class RobotController extends LinearOpMode{
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
         StandardTrackingWheelLocalizer myLocalizer = new StandardTrackingWheelLocalizer(hardwareMap, lastTrackingEncPositions, lastTrackingEncVels);
-
+        //Setting up motors
         frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
         rearLeftMotor = hardwareMap.dcMotor.get("rearLeftMotor");
         frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
@@ -71,7 +72,7 @@ public class RobotController extends LinearOpMode{
 
         slideMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         slideMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+        //Setting up servos
         arm = hardwareMap.servo.get("armServo");
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
@@ -79,7 +80,7 @@ public class RobotController extends LinearOpMode{
 
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
-
+        //Setting up dead wheels
         myLocalizer.setPoseEstimate(Constants.autoEndPose);
         if(Constants.blueAuto){
             turnSetpoint = Math.toDegrees(Constants.autoEndPose.getHeading()) + 90;
@@ -89,7 +90,7 @@ public class RobotController extends LinearOpMode{
         }
 
         waitForStart();
-
+        //Set start servo positions
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
@@ -103,11 +104,11 @@ public class RobotController extends LinearOpMode{
 
             myLocalizer.update();
             Pose2d myPose = myLocalizer.getPoseEstimate();
-
+            //Launch drone if up button is pressed
             if ((gamepad2.dpad_up)){
                 droneLauncher.setPosition(Constants.DRONE_RELEASE_POSITION);
             }
-
+            //Slows down robot move speed for better control
             if(Math.abs(gamepad1.right_stick_x) > 0.3 || Math.abs(gamepad1.right_stick_y) > 0.3 || gamepad1.right_stick_button){
                 slowingDown = 4;
                 slowDownTurning = 3;
@@ -116,7 +117,7 @@ public class RobotController extends LinearOpMode{
                 slowingDown = 1.5;
                 slowDownTurning = 1;
             }
-
+            //Gets gamepad input
             y = (-gamepad1.left_stick_y / slowingDown);
             x = (gamepad1.left_stick_x / slowingDown);
             turnOffset = (gamepad1.left_trigger - gamepad1.right_trigger) * (2.5 / slowDownTurning);
@@ -125,15 +126,16 @@ public class RobotController extends LinearOpMode{
             rearLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rearRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+            //Calls attachment movement(slides, arm, and grippers)
             AttachmentController();
-
+            //Resets robot orientation
             if (gamepad1.back){
                 myLocalizer.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
                 turnSetpoint = 0;
                 Constants.blueAuto = false;
             }
             else{
+                //Switches between field and robot orientation
                 if(gamepad1.start && !fieldOrientedToggle && fieldOriented){
                     fieldOriented = false;
                     fieldOrientedToggle = true;
@@ -142,28 +144,30 @@ public class RobotController extends LinearOpMode{
                     fieldOriented = true;
                     fieldOrientedToggle = true;
                 }
-                else if(!gamepad1.start){
+                else if(!gamepad1.start) {
                     fieldOrientedToggle = false;
                 }
 
                 if(fieldOriented){
+                    //Reverses robot direction when on blue side
                     if(Constants.blueAuto){
                         turnFeedback = myPose.getHeading() + Math.toRadians(90);
                     }
                     else{
                         turnFeedback = myPose.getHeading() - Math.toRadians(90);
                     }
-
+                    //Auto-turn code
                     Direction();
                     GyroTurn();
                 }
                 else {
+                    //Robot oriented code
                     turnOffset /= 4;
                     turnSpeed = turnOffset;
                     turnFeedback = 0;
                     turnSetpoint = myPose.getHeading();
                 }
-
+                //Field oriented algorithms
                 double rotX = x * Math.cos(-turnFeedback) - y * Math.sin(-turnFeedback);
                 double rotY = x * Math.sin(-turnFeedback) + y * Math.cos(-turnFeedback);
                 rotX = rotX * 1.1;
@@ -173,7 +177,7 @@ public class RobotController extends LinearOpMode{
                 double rearLeftPower = (rotY - rotX - turnSpeed) / denominator;
                 double frontRightPower = (rotY - rotX + turnSpeed) / denominator;
                 double rearRightPower = (rotY + rotX + turnSpeed) / denominator;
-
+                //Stops motors from running if motor power is less then %5
                 if((Math.abs(frontLeftPower) < 0.05) & (Math.abs(rearLeftPower) < 0.05) & (Math.abs(frontRightPower) < 0.05) & (Math.abs(rearRightPower) < 0.05))
                 {
                     frontLeftMotor.setPower(0);
@@ -183,12 +187,13 @@ public class RobotController extends LinearOpMode{
                 }
                 else
                 {
+                    //Sets motor power
                     frontLeftMotor.setPower(frontLeftPower);
                     rearLeftMotor.setPower(rearLeftPower);
                     frontRightMotor.setPower(frontRightPower);
                     rearRightMotor.setPower(rearRightPower);
                 }
-
+                //Telemetry for debugging
                 telemetry.addData("Field Oriented?", fieldOriented);
                 telemetry.addLine();
                 telemetry.addData("Turn Setpoint", turnSetpoint);
@@ -203,13 +208,14 @@ public class RobotController extends LinearOpMode{
             }
         }
     }
+    //Variables for attachment movement
     int slidePos = 0;
     boolean armPos = false;
     boolean slideResetOneShot = false;
     public void AttachmentController()
     {
         double slidePosError, slidePower;
-
+        //Sets slide and arm position when button is pressed
         if(gamepad2.a) {
             slidePos = Constants.SLIDE_LOW_POS;
             armPos = true;
@@ -220,23 +226,24 @@ public class RobotController extends LinearOpMode{
             slidePos = Constants.SLIDE_HIGH_POS;
             armPos = true;
         }
-
+        //Resets slide and arm positions
         if(gamepad2.dpad_down)
         {
             slidePos = 0;
             armPos = false;
         }
-
+        //Manual slide movement
         slidePos += -gamepad2.left_stick_y * 45;
-
+        //Clamps slide position so motors don't stall
         slidePos = Math.min(Math.max(slidePos, 0), 3070);
-
+        //Moves slide down if slide position is set incorrectly
         if(gamepad2.back){
             slideResetOneShot = true;
             slideMotor1.setPower(-0.3);
             slideMotor2.setPower(-0.3);
         }
         else if(slideResetOneShot){
+            //Resets slide encoder
             slideMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             slideMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             slideResetOneShot = false;
@@ -248,6 +255,7 @@ public class RobotController extends LinearOpMode{
             slideMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
         else if(gamepad2.start) {
+            //Increases slide power when hanging
             slidePos = 1000;
 
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
@@ -258,6 +266,7 @@ public class RobotController extends LinearOpMode{
             slideMotor2.setPower(slidePower);
         }
         else {
+            //Moves slides
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 1 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
@@ -266,11 +275,11 @@ public class RobotController extends LinearOpMode{
             slideMotor2.setPower(slidePower);
             telemetry.addData("slidePosError", slidePosError);
         }
-
+        //More telemetry for debugging
         telemetry.addData("slideMotor1 Power", slideMotor1.getPower());
         telemetry.addData("slidePosition", slidePos);
         telemetry.addData("Current Slide Position", slideMotor1.getCurrentPosition());
-
+        //Gripper controls
         if(gamepad2.left_bumper){
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
         }
@@ -284,6 +293,7 @@ public class RobotController extends LinearOpMode{
         else if(gamepad2.right_trigger > 0.5){
             rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         }
+        //Sets arm position
         arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armPos));
 
         telemetry.addData("Arm pos", armPos);
@@ -292,6 +302,7 @@ public class RobotController extends LinearOpMode{
     double rampPos = Constants.ARM_DOWN_POS;
     public double Ramp(double firstPos, double secondPos, boolean selectPos)
     {
+        //Slows down arm servo so it does not break itself
         if(selectPos){
             rampPos += 0.015;
         }
@@ -305,6 +316,7 @@ public class RobotController extends LinearOpMode{
 
     public void GyroTurn()
     {
+        //Calculating auto turn motor powers
         turnError = turnSetpoint - Math.toDegrees(turnFeedback);
         if(turnError > 180){
             turnError = turnError - 360;
@@ -321,6 +333,7 @@ public class RobotController extends LinearOpMode{
 
     public void Direction()
     {
+        //Setting auto-turn target position
         if(gamepad1.x){
             turnSetpoint = 90;
         }
@@ -336,7 +349,7 @@ public class RobotController extends LinearOpMode{
         else{
             turnSetpoint += turnOffset;
         }
-
+        //Keeps auto turn between 0 to 360 degrees
         if(turnSetpoint > 360){
             turnSetpoint = turnSetpoint - 360;
         }

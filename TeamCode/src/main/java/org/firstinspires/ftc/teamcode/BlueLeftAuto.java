@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Autonomous(name="Blue Left Auto", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
 public class BlueLeftAuto extends LinearOpMode {
-
+    //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
     Servo leftGripper;
@@ -34,16 +34,17 @@ public class BlueLeftAuto extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException
     {
+        //Sets up sensors
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
-
+        //Sets up servos
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
 
         leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         arm = hardwareMap.servo.get("armServo");
-
+        //Sets up slides
         slideMotor1 = hardwareMap.dcMotor.get("leftSlideMotor");
         slideMotor2 = hardwareMap.dcMotor.get("rightSlideMotor");
 
@@ -173,6 +174,7 @@ public class BlueLeftAuto extends LinearOpMode {
     }
     public double Ramp(double firstPos, double secondPos, boolean selectPos)
     {
+        //Slows down arm servo so it does not break itself
         if(selectPos){
             rampPos += 0.01;
         }

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Autonomous(name="Red Left Auto", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
 public class RedLeftAuto extends LinearOpMode {
-
+    //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
     Servo leftGripper;
@@ -34,16 +34,17 @@ public class RedLeftAuto extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException
     {
+        //Sets sensors
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
-
+        //Sets grippers and other servos
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
 
         leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         arm = hardwareMap.servo.get("armServo");
-
+        //Sets slide motors
         slideMotor1 = hardwareMap.dcMotor.get("leftSlideMotor");
         slideMotor2 = hardwareMap.dcMotor.get("rightSlideMotor");
 
@@ -56,7 +57,7 @@ public class RedLeftAuto extends LinearOpMode {
 
         slideMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+        //Sets up dead wheels
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Pose2d startPose = new Pose2d(-38.25, -63.75, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
@@ -179,6 +180,7 @@ public class RedLeftAuto extends LinearOpMode {
     }
     public double Ramp(double firstPos, double secondPos, boolean selectPos)
     {
+        //Slows down arm servo so it does not break itself
         if(selectPos){
             rampPos += 0.01;
         }
