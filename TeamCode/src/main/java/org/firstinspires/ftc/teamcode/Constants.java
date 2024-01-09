@@ -4,10 +4,10 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 
 public class Constants {
     //Constants we use often in all our programs
-    public static double GRIPPER_LEFT_OPEN_POSITION = 0;
-    public static double GRIPPER_LEFT_CLOSE_POSITION = 0.5;
-    public static double GRIPPER_RIGHT_OPEN_POSITION = 0.5;
-    public static double GRIPPER_RIGHT_CLOSE_POSITION = -0.065;
+    public static double GRIPPER_LEFT_OPEN_POSITION = 0.416;
+    public static double GRIPPER_LEFT_CLOSE_POSITION = 0.54;
+    public static double GRIPPER_RIGHT_OPEN_POSITION = 0.582;
+    public static double GRIPPER_RIGHT_CLOSE_POSITION = 0.473;
     public static double DRONE_START_POSITION = 0.696;
     public static double DRONE_RELEASE_POSITION = 0.248;
 

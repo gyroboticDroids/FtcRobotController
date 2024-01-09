@@ -109,7 +109,7 @@ public class RobotController extends LinearOpMode{
                 droneLauncher.setPosition(Constants.DRONE_RELEASE_POSITION);
             }
             //Slows down robot move speed for better control
-            if(Math.abs(gamepad1.right_stick_x) > 0.3 || Math.abs(gamepad1.right_stick_y) > 0.3 || gamepad1.right_stick_button){
+            if(Math.abs(gamepad1.right_stick_x) > 0.3 || Math.abs(gamepad1.right_stick_y) > 0.3 || gamepad1.right_stick_button || slidePos > 100){
                 slowingDown = 4;
                 slowDownTurning = 3;
             }
