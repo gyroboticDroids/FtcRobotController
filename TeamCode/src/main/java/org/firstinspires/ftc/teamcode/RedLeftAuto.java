@@ -117,7 +117,7 @@ public class RedLeftAuto extends LinearOpMode {
                 //Wait for teammate to finish
                 .waitSeconds(waitTime)
                 //Drive to board
-                .splineToLinearHeading(new Pose2d(39,-32.5 + boardOffset,0),Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(39,-31 + boardOffset,0),Math.toRadians(-90))
                 .build();
 
         drive.followTrajectorySequence(placePurplePixel);
@@ -125,7 +125,7 @@ public class RedLeftAuto extends LinearOpMode {
         //Raise slide and arm
         slidePos = 600;
         armUp = true;
-        while ((slideMotor1.getCurrentPosition() < slidePos - 30 || rampPos < 0.743) && opModeIsActive()) {
+        while ((slideMotor1.getCurrentPosition() < slidePos - 30 || rampPos < Constants.ARM_UP_POS - 0.001) && opModeIsActive()) {
             arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
@@ -157,7 +157,7 @@ public class RedLeftAuto extends LinearOpMode {
         //Lower slide and arm
         slidePos = 0;
         armUp = false;
-        while ((slideMotor1.getCurrentPosition() > slidePos + 50 || rampPos > 0.502) && opModeIsActive()) {
+        while ((slideMotor1.getCurrentPosition() > slidePos + 50 || rampPos > Constants.ARM_DOWN_POS + 0.001) && opModeIsActive()) {
             arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;

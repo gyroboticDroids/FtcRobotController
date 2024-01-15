@@ -72,15 +72,15 @@ public class BlueLeftAuto extends LinearOpMode {
                     if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
                         selectPose = new Pose2d(15.75, 31.25, Math.toRadians(0));
                         selectTurn = 90;
-                        boardOffset = 5.75;
+                        boardOffset = 4.25;
                     } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
                         selectPose = new Pose2d(7.75, 31.25, Math.toRadians(180));
                         selectTurn = -90;
-                        boardOffset = -5.75;
+                        boardOffset = -4.25;
                     } else {
                         selectPose = new Pose2d(11.75, 31.5, Math.toRadians(-90));
                         selectTurn = 0;
-                        boardOffset = 0;
+                        boardOffset = 1.5;
                     }
                 })
                 .build();
@@ -102,7 +102,7 @@ public class BlueLeftAuto extends LinearOpMode {
                 //Turn towards back wall
                 .turn(Math.toRadians(0.001)-selectPose.getHeading())
                 //Drives to board
-                .splineToLinearHeading(new Pose2d(39,36.5 + boardOffset,0),Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(39,35.75 + boardOffset,0),Math.toRadians(-90))
                 .build();
 
         drive.followTrajectorySequence(placePurplePixel);
@@ -110,7 +110,7 @@ public class BlueLeftAuto extends LinearOpMode {
         //Raise slide and arm
         slidePos = 320;
         armUp = true;
-        while ((slideMotor1.getCurrentPosition() < slidePos - 30 || rampPos < 0.743) && opModeIsActive()) {
+        while ((slideMotor1.getCurrentPosition() < slidePos - 30 || rampPos < Constants.ARM_UP_POS - 0.001) && opModeIsActive()) {
             arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
@@ -143,7 +143,7 @@ public class BlueLeftAuto extends LinearOpMode {
         //Lower slide and arm
         slidePos = 0;
         armUp = false;
-        while ((slideMotor1.getCurrentPosition() > slidePos + 50 || rampPos > 0.502) && opModeIsActive()) {
+        while ((slideMotor1.getCurrentPosition() > slidePos + 50 || rampPos > Constants.ARM_DOWN_POS + 0.001) && opModeIsActive()) {
             arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;

@@ -51,7 +51,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name="JasonNewTest", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class JasonNewTest extends LinearOpMode {
 
     // Declare OpMode members.

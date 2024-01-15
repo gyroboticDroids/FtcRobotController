@@ -294,8 +294,10 @@ public class RobotController extends LinearOpMode{
             rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         }
         //Sets arm position
-        arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armPos));
-
+        if(armPos || slideMotor1.getCurrentPosition() < 550)
+        {
+            arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armPos));
+        }
         telemetry.addData("Arm pos", armPos);
     }
 
