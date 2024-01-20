@@ -30,6 +30,7 @@ public class RedRightAuto extends LinearOpMode {
     Servo arm;
     double slidePosError;
     double slidePower;
+    Servo droneLauncher;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -57,6 +58,9 @@ public class RedRightAuto extends LinearOpMode {
 
         slideMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        droneLauncher = hardwareMap.servo.get("droneLaunchServo");
+        droneLauncher.setPosition(Constants.DRONE_START_POSITION);
         //Sets up dead wheels
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Pose2d startPose = new Pose2d(14.5, -63.75, Math.toRadians(90));
