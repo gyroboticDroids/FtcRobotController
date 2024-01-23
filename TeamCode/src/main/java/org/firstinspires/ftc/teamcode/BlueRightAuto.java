@@ -122,7 +122,7 @@ public class BlueRightAuto extends LinearOpMode {
                 //Wait for teammate to finish
                 .waitSeconds(waitTime)
                 //Drive to board
-                .splineToLinearHeading(new Pose2d(39,35.75 + boardOffset,0),Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(39,38.5 + boardOffset,0),Math.toRadians(90))
                 .build();
 
         drive.followTrajectorySequence(placePurplePixel);

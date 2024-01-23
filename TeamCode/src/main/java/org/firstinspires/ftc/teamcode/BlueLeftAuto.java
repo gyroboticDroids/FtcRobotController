@@ -107,7 +107,7 @@ public class BlueLeftAuto extends LinearOpMode {
                 //Turn towards back wall
                 .turn(Math.toRadians(0.001)-selectPose.getHeading())
                 //Drives to board
-                .splineToLinearHeading(new Pose2d(39,35.75 + boardOffset,0),Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(39,37 + boardOffset,0),Math.toRadians(-90))
                 .build();
 
         drive.followTrajectorySequence(placePurplePixel);
