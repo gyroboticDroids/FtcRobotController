@@ -105,7 +105,7 @@ public class RobotController extends LinearOpMode{
             myLocalizer.update();
             Pose2d myPose = myLocalizer.getPoseEstimate();
             //Launch drone if up button is pressed
-            if ((gamepad2.dpad_up)){
+            if ((gamepad1.dpad_up)){
                 droneLauncher.setPosition(Constants.DRONE_RELEASE_POSITION);
             }
             //Slows down robot move speed for better control
@@ -114,7 +114,7 @@ public class RobotController extends LinearOpMode{
                 slowDownTurning = 3;
             }
             else{
-                slowingDown = 1.5;
+                slowingDown = 1;
                 slowDownTurning = 1;
             }
             //Gets gamepad input
@@ -231,6 +231,9 @@ public class RobotController extends LinearOpMode{
         {
             slidePos = 0;
             armPos = false;
+            //Resets gripper position
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+            rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
         }
         //Manual slide movement
         slidePos += -gamepad2.left_stick_y * 45;

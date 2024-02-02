@@ -11,8 +11,8 @@ public class Constants {
     public static double DRONE_START_POSITION = 0.4375;
     public static double DRONE_RELEASE_POSITION = 0.89662;
 
-    public static int SLIDE_LOW_POS = 950;
-    public static int SLIDE_MEDIUM_POS = 2000;
+    public static int SLIDE_LOW_POS = 1100;
+    public static int SLIDE_MEDIUM_POS = 2100;
     public static int SLIDE_HIGH_POS = 3050;
 
     public static double ARM_UP_POS = 0.75;
