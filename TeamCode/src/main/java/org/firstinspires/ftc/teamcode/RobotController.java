@@ -4,14 +4,10 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 
 import com.qualcomm.robotcore.hardware.Servo;
@@ -171,7 +167,7 @@ public class RobotController extends LinearOpMode{
                 double rotX = x * Math.cos(-turnFeedback) - y * Math.sin(-turnFeedback);
                 double rotY = x * Math.sin(-turnFeedback) + y * Math.cos(-turnFeedback);
                 rotX = rotX * 1.1;
-                double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + turnSpeed, 1);
+                double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(turnSpeed), 1);
 
                 double frontLeftPower = (rotY + rotX - turnSpeed) / denominator;
                 double rearLeftPower = (rotY - rotX - turnSpeed) / denominator;
