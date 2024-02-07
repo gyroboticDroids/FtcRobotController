@@ -1,16 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Size;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.apache.commons.math3.analysis.function.Add;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -21,8 +17,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name="Red Left Auto Vision", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
-public class RedLeftAutoVision extends LinearOpMode {
+@Autonomous(name="Red Left Auto Vision Test", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+public class RedLeftAutoVisionCloseTest extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
@@ -57,7 +53,7 @@ public class RedLeftAutoVision extends LinearOpMode {
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
 
-        leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
+        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         arm = hardwareMap.servo.get("armServo");
         //Sets slide motors
@@ -77,72 +73,74 @@ public class RedLeftAutoVision extends LinearOpMode {
         droneLauncher = hardwareMap.servo.get("droneLaunchServo");
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
         //Sets up dead wheels
+        boardOffset = 0;
+        desiredTagId = 5;
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Pose2d startPose = new Pose2d(-38.25, -63.75, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(36,-32.5 + boardOffset,0);
         drive.setPoseEstimate(startPose);
 
         waitForStart();
 
-        TrajectorySequence approachSpikeMarks = drive.trajectorySequenceBuilder(startPose)
-                //Move into spike mark area
-                .splineToLinearHeading(new Pose2d(-35, -30.25, startPose.getHeading()), startPose.getHeading())
-                //Determine where prop is located
-                .addDisplacementMarker(() -> {
-                    if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
-                        selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
-                        selectTurn = 90;
-                        boardOffset = 6;
-                        waitTime = 3;
-                        desiredTagId = 4;
-                    } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
-                        selectPose = new Pose2d(-32.5, -31.25,0);
-                        selectTurn = -90;
-                        boardOffset = -6;
-                        waitTime = 0;
-                        desiredTagId = 6;
-                    } else {
-                        selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
-                        selectTurn = 0;
-                        boardOffset = 0;
-                        waitTime = 1.75;
-                        desiredTagId = 5;
-                    }
-                })
-                .build();
-        drive.followTrajectorySequence(approachSpikeMarks);
-
-        TrajectorySequence placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
-                //Turn to proper spike mark
-                .turn(Math.toRadians(selectTurn))
-                //Drive up to proper spike mark
-                .lineToLinearHeading(selectPose)
-                //Drop purple pixel
-                .addDisplacementMarker(() -> {
-                    leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
-                })
-                //Back away from purple pixel
-                .back(4.5)
-                //Move back to safe turning position
-                .lineToLinearHeading(new Pose2d(-37, -48, selectPose.getHeading()))
-                //Turn towards back wall
-                .turn(Math.toRadians(179.999)-selectPose.getHeading())
-                //Drive towards back wall
-                .lineToLinearHeading(new Pose2d(-58,-48, Math.toRadians(180)))
-                //Turn towards opposing side
-                .turn(Math.toRadians(-90))
-                //Drive towards opposing side
-                .lineToLinearHeading(new Pose2d(-58,-9, Math.toRadians(90)))
-                //Turn towards center of field
-                .turn(Math.toRadians(-90))
-                //Drive towards center of field
-                .lineToLinearHeading(new Pose2d(15,-9,0))
-                //Wait for teammate to finish
-                .waitSeconds(waitTime)
-                //Drive to board
-                .splineToLinearHeading(new Pose2d(36,-32.5 + boardOffset,0), Math.toRadians(-90))
-                .build();
-
-        drive.followTrajectorySequence(placePurplePixel);
+//        TrajectorySequence approachSpikeMarks = drive.trajectorySequenceBuilder(startPose)
+//                //Move into spike mark area
+//                .splineToLinearHeading(new Pose2d(-35, -30.25, startPose.getHeading()), startPose.getHeading())
+//                //Determine where prop is located
+//                .addDisplacementMarker(() -> {
+//                    if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
+//                        selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
+//                        selectTurn = 90;
+//                        boardOffset = 6;
+//                        waitTime = 3;
+//                        desiredTagId = 4;
+//                    } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
+//                        selectPose = new Pose2d(-32.5, -31.25,0);
+//                        selectTurn = -90;
+//                        boardOffset = -6;
+//                        waitTime = 0;
+//                        desiredTagId = 6;
+//                    } else {
+//                        selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
+//                        selectTurn = 0;
+//                        boardOffset = 0;
+//                        waitTime = 1.75;
+//                        desiredTagId = 5;
+//                    }
+//                })
+//                .build();
+//        drive.followTrajectorySequence(approachSpikeMarks);
+//
+//        TrajectorySequence placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+//                //Turn to proper spike mark
+//                .turn(Math.toRadians(selectTurn))
+//                //Drive up to proper spike mark
+//                .lineToLinearHeading(selectPose)
+//                //Drop purple pixel
+//                .addDisplacementMarker(() -> {
+//                    leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+//                })
+//                //Back away from purple pixel
+//                .back(4.5)
+//                //Move back to safe turning position
+//                .lineToLinearHeading(new Pose2d(-37, -48, selectPose.getHeading()))
+//                //Turn towards back wall
+//                .turn(Math.toRadians(179.999)-selectPose.getHeading())
+//                //Drive towards back wall
+//                .lineToLinearHeading(new Pose2d(-58,-48, Math.toRadians(180)))
+//                //Turn towards opposing side
+//                .turn(Math.toRadians(-90))
+//                //Drive towards opposing side
+//                .lineToLinearHeading(new Pose2d(-58,-9, Math.toRadians(90)))
+//                //Turn towards center of field
+//                .turn(Math.toRadians(-90))
+//                //Drive towards center of field
+//                .lineToLinearHeading(new Pose2d(15,-9,0))
+//                //Wait for teammate to finish
+//                .waitSeconds(waitTime)
+//                //Drive to board
+//                .splineToLinearHeading(new Pose2d(36,-32.5 + boardOffset,0), Math.toRadians(-90))
+//                .build();
+//
+//        drive.followTrajectorySequence(placePurplePixel);
 
         //Raise slide and arm
         slidePos = 550;
@@ -168,6 +166,7 @@ public class RedLeftAutoVision extends LinearOpMode {
         double ze = 0;
         double ye = 0;
         double pe = 0;
+        sleep(2000);
 
         List<AprilTagDetection> currentDetections = tagProcessor.getDetections();
         telemetry.addData("April tags detected", currentDetections.size());
@@ -193,11 +192,12 @@ public class RedLeftAutoVision extends LinearOpMode {
             }
         }
         telemetry.update();
+        sleep(5000);
 
-        TrajectorySequence dropOnBoard = drive.trajectorySequenceBuilder(placePurplePixel.end())
+        TrajectorySequence dropOnBoard = drive.trajectorySequenceBuilder(startPose)
                 //Drive to place yellow pixel
                 //TODO: Add camera here
-                .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze, Math.toRadians(0 - pe)))
+                .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze, Math.toRadians(0 + pe)))
                 //.lineToConstantHeading(new Vector2d(49 - ye, -31 + boardOffset - ze))
                 //Drop yellow pixel
                 .addDisplacementMarker(() -> {
