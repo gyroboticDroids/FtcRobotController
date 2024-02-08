@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -73,41 +74,41 @@ public class RedLeftAutoVisionCloseTest extends LinearOpMode {
         droneLauncher = hardwareMap.servo.get("droneLaunchServo");
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
         //Sets up dead wheels
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         boardOffset = 0;
         desiredTagId = 5;
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Pose2d startPose = new Pose2d(36,-32.5 + boardOffset,0);
+        //Pose2d startPose = new Pose2d(-38.25, -63.75, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
         waitForStart();
 
-//        TrajectorySequence approachSpikeMarks = drive.trajectorySequenceBuilder(startPose)
+//        Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)
 //                //Move into spike mark area
 //                .splineToLinearHeading(new Pose2d(-35, -30.25, startPose.getHeading()), startPose.getHeading())
-//                //Determine where prop is located
-//                .addDisplacementMarker(() -> {
-//                    if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
-//                        selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
-//                        selectTurn = 90;
-//                        boardOffset = 6;
-//                        waitTime = 3;
-//                        desiredTagId = 4;
-//                    } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
-//                        selectPose = new Pose2d(-32.5, -31.25,0);
-//                        selectTurn = -90;
-//                        boardOffset = -6;
-//                        waitTime = 0;
-//                        desiredTagId = 6;
-//                    } else {
-//                        selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
-//                        selectTurn = 0;
-//                        boardOffset = 0;
-//                        waitTime = 1.75;
-//                        desiredTagId = 5;
-//                    }
-//                })
 //                .build();
-//        drive.followTrajectorySequence(approachSpikeMarks);
+//        drive.followTrajectory(approachSpikeMarks);
+//
+//        //Determine where prop is located
+//        if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
+//            selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
+//            selectTurn = 90;
+//            boardOffset = 6;
+//            waitTime = 3;
+//            desiredTagId = 4;
+//        } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
+//            selectPose = new Pose2d(-32.5, -31.25,0);
+//            selectTurn = -90;
+//            boardOffset = -6;
+//            waitTime = 0;
+//            desiredTagId = 6;
+//        } else {
+//            selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
+//            selectTurn = 0;
+//            boardOffset = 0;
+//            waitTime = 1.75;
+//            desiredTagId = 5;
+//        }
 //
 //        TrajectorySequence placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
 //                //Turn to proper spike mark
@@ -146,7 +147,7 @@ public class RedLeftAutoVisionCloseTest extends LinearOpMode {
         slidePos = 550;
         armUp = true;
         while ((slideMotor1.getCurrentPosition() < slidePos - 30 || rampPos < Constants.ARM_UP_POS - 0.001) && opModeIsActive()) {
-            arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
+            arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
@@ -166,7 +167,9 @@ public class RedLeftAutoVisionCloseTest extends LinearOpMode {
         double ze = 0;
         double ye = 0;
         double pe = 0;
-        sleep(2000);
+        double zrc = -0.75;
+        double yrc = 4;
+        sleep(1000);
 
         List<AprilTagDetection> currentDetections = tagProcessor.getDetections();
         telemetry.addData("April tags detected", currentDetections.size());
@@ -174,14 +177,18 @@ public class RedLeftAutoVisionCloseTest extends LinearOpMode {
         {
             if(detection.id == desiredTagId && detection.metadata != null)
             {
-                za = detection.ftcPose.z * Math.cos(-Math.toRadians(detection.ftcPose.pitch)) + detection.ftcPose.y * Math.sin(-Math.toRadians(detection.ftcPose.pitch));
-                ya = -detection.ftcPose.z * Math.sin(-Math.toRadians(detection.ftcPose.pitch)) + detection.ftcPose.y * Math.cos(-Math.toRadians(detection.ftcPose.pitch));
+                double zrcp = detection.ftcPose.z + zrc;
+                double yrcp = detection.ftcPose.y + yrc;
+                double prcp = detection.ftcPose.pitch;
+
+                za = zrcp * Math.cos(-Math.toRadians(prcp)) + yrcp * Math.sin(-Math.toRadians(prcp));
+                ya = -zrcp * Math.sin(-Math.toRadians(prcp)) + yrcp * Math.cos(-Math.toRadians(prcp));
                 pa = -detection.ftcPose.pitch;
 
                 telemetry.addData("Tag ID", detection.id);
 
-                ze = -1.5 - za;
-                ye = 19.2 - ya;
+                ze = -1.25 + zrc - za;
+                ye = 19.2 + yrc - ya;
                 pe = 0 - pa;
 
                 telemetry.addData("ze", ze);
@@ -194,27 +201,41 @@ public class RedLeftAutoVisionCloseTest extends LinearOpMode {
         telemetry.update();
         sleep(5000);
 
-        TrajectorySequence dropOnBoard = drive.trajectorySequenceBuilder(startPose)
-                //Drive to place yellow pixel
-                //TODO: Add camera here
+        Trajectory driveToBoard = drive.trajectoryBuilder(startPose)
                 .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze, Math.toRadians(0 + pe)))
-                //.lineToConstantHeading(new Vector2d(49 - ye, -31 + boardOffset - ze))
-                //Drop yellow pixel
-                .addDisplacementMarker(() -> {
-                    rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
-                })
-                //Wait for gripper to open
-                .waitSeconds(0.1)
-                //Back up to release pixel if trapped against backdrop
+                .build();
+        drive.followTrajectory(driveToBoard);
+
+        rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
+
+        sleep(1000);
+
+        Trajectory driveBackFromBoard = drive.trajectoryBuilder(driveToBoard.end())
                 .back(5)
                 .build();
-        drive.followTrajectorySequence(dropOnBoard);
+        drive.followTrajectory(driveBackFromBoard);
+
+//        TrajectorySequence dropOnBoard = drive.trajectorySequenceBuilder(startPose)
+//                //Drive to place yellow pixel
+//                //TODO: Add camera here
+//                .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze, Math.toRadians(0 + pe)))
+//                //.lineToConstantHeading(new Vector2d(49 - ye, -31 + boardOffset - ze))
+//                //Drop yellow pixel
+//                .addDisplacementMarker(() -> {
+//                    rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
+//                })
+//                //Wait for gripper to open
+//                .waitSeconds(0.1)
+//                //Back up to release pixel if trapped against backdrop
+//                .back(5)
+//                .build();
+//        drive.followTrajectorySequence(dropOnBoard);
 
         //Lower slide and arm
         slidePos = 0;
         armUp = false;
         while ((slideMotor1.getCurrentPosition() > slidePos + 50 || rampPos > Constants.ARM_DOWN_POS + 0.001) && opModeIsActive()) {
-            arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
+            arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
@@ -231,20 +252,7 @@ public class RedLeftAutoVisionCloseTest extends LinearOpMode {
         slideMotor1.setPower(0);
         slideMotor2.setPower(0);
 
-        Constants.autoEndPose = dropOnBoard.end();
+        Constants.autoEndPose = driveBackFromBoard.end();
         Constants.blueAuto = false;
-    }
-    public double Ramp(double firstPos, double secondPos, boolean selectPos)
-    {
-        //Slows down arm servo so it does not break itself
-        if(selectPos){
-            rampPos += 0.01;
-        }
-        else{
-            rampPos -= 0.01;
-        }
-        rampPos = Math.min(Math.max(rampPos, firstPos), secondPos);
-
-        return rampPos;
     }
 }

@@ -36,7 +36,6 @@ public class TestTickDistance extends LinearOpMode {
         slideMotor = hardwareMap.dcMotor.get("leftSlideMotor");
         slideMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        telemetry.speak("Hi. Please press play to run the program", "Latin", "Mexico");
         slideMotor2 = hardwareMap.dcMotor.get("rightSlideMotor");
         slideMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slideMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -68,13 +67,10 @@ public class TestTickDistance extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            drone += gamepad1.left_stick_y / 100;
-            armPosition += gamepad1.right_stick_y / 100;
-            gripper1 += gamepad2.left_stick_y / 100;
-            gripper2 += gamepad2.right_stick_y / 100;
-
-            drone += gamepad1.left_stick_y / 100;
-            armPosition += gamepad1.right_stick_y / 100;
+            drone += gamepad1.left_stick_y / 500;
+            armPosition += gamepad1.right_stick_y / 500;
+            gripper1 += gamepad2.left_stick_y / 500;
+            gripper2 += gamepad2.right_stick_y / 500;
 
             arm.setPosition(armPosition);
             droneLauncher.setPosition(drone);

@@ -130,7 +130,7 @@ public class RedLeftAuto_Lower extends LinearOpMode {
         slidePos = 320;
         armUp = true;
         while ((slideMotor1.getCurrentPosition() < slidePos - 30 || rampPos < Constants.ARM_UP_POS - 0.001) && opModeIsActive()) {
-            arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
+            arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
@@ -162,7 +162,7 @@ public class RedLeftAuto_Lower extends LinearOpMode {
         slidePos = 0;
         armUp = false;
         while ((slideMotor1.getCurrentPosition() > slidePos + 50 || rampPos > Constants.ARM_DOWN_POS + 0.001) && opModeIsActive()) {
-            arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
+            arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
@@ -181,18 +181,5 @@ public class RedLeftAuto_Lower extends LinearOpMode {
 
         Constants.autoEndPose = dropOnBoard.end();
         Constants.blueAuto = false;
-    }
-    public double Ramp(double firstPos, double secondPos, boolean selectPos)
-    {
-        //Slows down arm servo so it does not break itself
-        if(selectPos){
-            rampPos += 0.01;
-        }
-        else{
-            rampPos -= 0.01;
-        }
-        rampPos = Math.min(Math.max(rampPos, firstPos), secondPos);
-
-        return rampPos;
     }
 }

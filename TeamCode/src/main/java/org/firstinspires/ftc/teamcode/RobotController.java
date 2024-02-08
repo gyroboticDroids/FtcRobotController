@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -295,25 +296,37 @@ public class RobotController extends LinearOpMode{
         //Sets arm position
         if(armPos || slideMotor1.getCurrentPosition() < 550)
         {
-            arm.setPosition(Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armPos));
+            arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armPos));
         }
         telemetry.addData("Arm pos", armPos);
     }
 
-    double rampPos = Constants.ARM_DOWN_POS;
-    public double Ramp(double firstPos, double secondPos, boolean selectPos)
-    {
-        //Slows down arm servo so it does not break itself
-        if(selectPos){
-            rampPos += 0.015;
-        }
-        else{
-            rampPos -= 0.015;
-        }
-        rampPos = Math.min(Math.max(rampPos, firstPos), secondPos);
-
-        return rampPos;
-    }
+//    double rampPos = Constants.ARM_DOWN_POS;
+//    public double Ramp(double firstPos, double secondPos, boolean selectPos)
+//    {
+//        double rampRate = 0.015;
+//        if(secondPos>firstPos){
+//            //Slows down arm servo so it does not break itself
+//            if(selectPos){
+//                rampPos += rampRate;
+//            }
+//            else{
+//                rampPos -= rampRate;
+//            }
+//            rampPos = Range.clip(rampPos,firstPos,secondPos);
+//        }
+//        else{
+//            //Slows down arm servo so it does not break itself
+//            if(selectPos){
+//                rampPos -= rampRate;
+//            }
+//            else{
+//                rampPos += rampRate;
+//            }
+//            rampPos = Range.clip(rampPos,secondPos,firstPos);
+//        }
+//        return rampPos;
+//    }
 
     public void GyroTurn()
     {
