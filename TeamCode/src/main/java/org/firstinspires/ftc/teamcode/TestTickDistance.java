@@ -28,8 +28,8 @@ public class TestTickDistance extends LinearOpMode {
     DcMotor rearRightMotor;
     double armPosition = 0.501;
     double drone = 0.696;
-    double gripper1;
-    double gripper2;
+    double gripper1 = 0.5;
+    double gripper2 = 0.5;
     @Override
     public void runOpMode() throws InterruptedException
     {

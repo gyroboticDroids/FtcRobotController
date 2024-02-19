@@ -233,7 +233,7 @@ public class RobotController extends LinearOpMode{
             rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
         }
         //Manual slide movement
-        slidePos += -gamepad2.left_stick_y * 45;
+        slidePos += -gamepad2.left_stick_y * 55;
         //Clamps slide position so motors don't stall
         slidePos = Math.min(Math.max(slidePos, 0), 3070);
         //Moves slide down if slide position is set incorrectly
@@ -269,7 +269,7 @@ public class RobotController extends LinearOpMode{
             //Moves slides
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 1 / 500;
-            slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
+            slidePower = Math.min(Math.max(slidePower, -0.7), 0.85);
 
             slideMotor1.setPower(slidePower);
             slideMotor2.setPower(slidePower);
