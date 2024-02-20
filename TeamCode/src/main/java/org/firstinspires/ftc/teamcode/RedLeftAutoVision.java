@@ -164,7 +164,7 @@ public class RedLeftAutoVision extends LinearOpMode {
         }
         slideMotor1.setPower(0);
         slideMotor2.setPower(0);
-
+        //Variables needed for camera
         double za = 0;
         double ya = 0;
         double pa = 0;
@@ -173,17 +173,19 @@ public class RedLeftAutoVision extends LinearOpMode {
         double pe = 0;
         double zrc = -0.75;
         double yrc = 4;
-        sleep(1000);
-
+        sleep(1000); //Waits for camera to pick up april tag
         long end = System.currentTimeMillis() + 1000;
+
         while(System.currentTimeMillis() < end)
         {
             List<AprilTagDetection> currentDetections = tagProcessor.getDetections();
             telemetry.addData("April tags detected", currentDetections.size());
+            //Loops for each april tag detection
             for(AprilTagDetection detection : currentDetections)
             {
                 if(detection.id == desiredTagId && detection.metadata != null)
                 {
+                    //Camera detection stuff
                     double zrcp = detection.ftcPose.z + zrc;
                     double yrcp = detection.ftcPose.y + yrc;
                     double prcp = detection.ftcPose.pitch;
