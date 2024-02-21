@@ -9,9 +9,15 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 @Autonomous(name="Red Right Auto Fast", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
 public class RedRightAutoFaster extends LinearOpMode {
@@ -24,17 +30,21 @@ public class RedRightAutoFaster extends LinearOpMode {
     DcMotor slideMotor2;
     Pose2d selectPose = new Pose2d(0,0,0);
     double selectTurn = 0;
-    double boardOffset = 0;
+    double boardOffset = 0, zeOffset = 0;
     boolean armUp = false;
     int slidePos;
     Servo arm;
     double slidePosError;
     double slidePower;
+    int desiredTagId;
     Servo droneLauncher;
 
     @Override
     public void runOpMode() throws InterruptedException
     {
+        //Sets up camera
+        AprilTagProcessor tagProcessor = AprilTagProcessor.easyCreateWithDefaults();
+        VisionPortal visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), tagProcessor);
         //Sets up sensors
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
@@ -70,7 +80,8 @@ public class RedRightAutoFaster extends LinearOpMode {
 
         Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)
                 //Move into spike mark area
-                .splineToLinearHeading(new Pose2d(11.75, -30.25, startPose.getHeading()), startPose.getHeading())
+                .splineToLinearHeading(new Pose2d(11.5, -40.25, startPose.getHeading()), startPose.getHeading())
+                .lineToLinearHeading(new Pose2d(11.5, -30.25, startPose.getHeading()))
                 .build();
         drive.followTrajectory(approachSpikeMarks);
 
@@ -78,7 +89,9 @@ public class RedRightAutoFaster extends LinearOpMode {
 
         if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(8.75, -31.25, Math.toRadians(180));
-            boardOffset = 4.25;
+            boardOffset = 4.5;
+            zeOffset = -3;
+            desiredTagId = 4;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     .turn(Math.toRadians(90))
                     //Drive up to proper spike mark
@@ -87,12 +100,14 @@ public class RedRightAutoFaster extends LinearOpMode {
                     .addDisplacementMarker(() -> {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
-                    .back(4.5)
+                    .back(5)
                     .lineToLinearHeading(new Pose2d(36,-33.25 + boardOffset,0))
                     .build();
         } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(14.75, -31.25,0);
-            boardOffset = -4.25;
+            boardOffset = -4.5;
+            zeOffset = 2;
+            desiredTagId = 6;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     .turn(Math.toRadians(-90))
                     //Drive up to proper spike mark
@@ -101,7 +116,7 @@ public class RedRightAutoFaster extends LinearOpMode {
                     .addDisplacementMarker(() -> {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
-                    .back(4.5)
+                    .back(5)
                     .strafeRight(16.75)
                     .waitSeconds(0.1)
                     .splineToLinearHeading(new Pose2d(36,-33.25 + boardOffset,0), Math.toRadians(90))
@@ -110,6 +125,8 @@ public class RedRightAutoFaster extends LinearOpMode {
         } else {
             selectPose = new Pose2d(11.75, -31.5, Math.toRadians(90));
             boardOffset = -1.5;
+            zeOffset = -0.5;
+            desiredTagId = 5;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Drive up to proper spike mark
                     .lineToLinearHeading(selectPose)
@@ -117,7 +134,7 @@ public class RedRightAutoFaster extends LinearOpMode {
                     .addDisplacementMarker(() -> {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
-                    .back(4.5)
+                    .back(7)
                     .lineToLinearHeading(new Pose2d(36,-33.25 + boardOffset,0))
                     .build();
         }
@@ -125,7 +142,7 @@ public class RedRightAutoFaster extends LinearOpMode {
         drive.followTrajectorySequence(placePurplePixel);
 
         //Raise slide and arm
-        slidePos = 320;
+        slidePos = 220;
         armUp = true;
         while ((slideMotor1.getCurrentPosition() < slidePos - 30 || ArmRamp.rampPos > Constants.ARM_UP_POS + 0.001) && opModeIsActive()) {
             arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
@@ -143,9 +160,57 @@ public class RedRightAutoFaster extends LinearOpMode {
         slideMotor1.setPower(0);
         slideMotor2.setPower(0);
 
+        //Variables needed for camera
+        double za = 0;
+        double ya = 0;
+        double pa = 0;
+        double ze = 0;
+        double ye = 0;
+        double pe = 0;
+        double zrc = -0.75;
+        double yrc = 4;
+        long end = System.currentTimeMillis() + 1500;
+
+        while(System.currentTimeMillis() < end)
+        {
+            List<AprilTagDetection> currentDetections = tagProcessor.getDetections();
+            telemetry.addData("April tags detected", currentDetections.size());
+            //Loops for each april tag detection
+            for(AprilTagDetection detection : currentDetections)
+            {
+                if(detection.id == desiredTagId && detection.metadata != null)
+                {
+                    //Camera detection stuff
+                    double zrcp = detection.ftcPose.z + zrc;
+                    double yrcp = detection.ftcPose.y + yrc;
+                    double prcp = detection.ftcPose.pitch;
+
+                    za = zrcp * Math.cos(-Math.toRadians(prcp)) + yrcp * Math.sin(-Math.toRadians(prcp));
+                    ya = -zrcp * Math.sin(-Math.toRadians(prcp)) + yrcp * Math.cos(-Math.toRadians(prcp));
+                    pa = -detection.ftcPose.pitch;
+
+                    telemetry.addData("Tag ID", detection.id);
+
+                    ze = -1.25 + zrc - za;
+                    ye = 19.2 + yrc - ya;
+                    pe = 0 - pa;
+
+                    telemetry.addData("ze", ze);
+                    telemetry.addData("ye", ye);
+                    telemetry.addData("pe", pe);
+
+                    break;  //For loop
+                }
+            }
+            telemetry.update();
+            if(ze != 0){
+                break;  //While loop
+            }
+        }
+
         TrajectorySequence dropOnBoard = drive.trajectorySequenceBuilder(placePurplePixel.end())
                 //Drive to place yellow pixel
-                .forward(49.5 - placePurplePixel.end().getX())
+                .lineToLinearHeading(new Pose2d(49.5 - ye, -33.25 + boardOffset - ze + zeOffset, Math.toRadians(0 + pe)))
                 //Drop yellow pixel
                 .addDisplacementMarker(() -> {
                     rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);

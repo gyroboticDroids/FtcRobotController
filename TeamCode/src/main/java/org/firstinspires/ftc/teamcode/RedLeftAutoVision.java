@@ -16,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -33,7 +34,7 @@ public class RedLeftAutoVision extends LinearOpMode {
     DcMotor slideMotor2;
     Pose2d selectPose = new Pose2d(0,0,0);
     double selectTurn = 0;
-    double boardOffset = 0;
+    double boardOffset = 0, zeOffset = 0;
     boolean armUp = false;
     int slidePos;
     double rampPos = 0.501;
@@ -86,35 +87,71 @@ public class RedLeftAutoVision extends LinearOpMode {
 
         waitForStart();
 
-        TrajectorySequence approachSpikeMarks = drive.trajectorySequenceBuilder(startPose)
+        Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)
                 //Move into spike mark area
-                .splineToLinearHeading(new Pose2d(-35, -30.25, startPose.getHeading()), startPose.getHeading())
-                //Determine where prop is located
-                .addDisplacementMarker(() -> {
-                    if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
-                        selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
-                        selectTurn = 90;
-                        boardOffset = 6;
-                        waitTime = 0;
-                        desiredTagId = 4;
-                    } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
-                        selectPose = new Pose2d(-32.5, -31.25,0);
-                        selectTurn = -90;
-                        boardOffset = -6;
-                        waitTime = 0;
-                        desiredTagId = 6;
-                    } else {
-                        selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
-                        selectTurn = 0;
-                        boardOffset = 0;
-                        waitTime = 0;
-                        desiredTagId = 5;
-                    }
-                })
+                .splineToLinearHeading(new Pose2d(-35, -40.25, startPose.getHeading()), startPose.getHeading())
+                .lineToLinearHeading(new Pose2d(-35, -30.25, startPose.getHeading()))
                 .build();
-        drive.followTrajectorySequence(approachSpikeMarks);
+        drive.followTrajectory(approachSpikeMarks);
 
-        TrajectorySequence placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+        TrajectorySequence placePurplePixel;
+        //Determine where prop is located
+        if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
+            selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
+            selectTurn = 90;
+            boardOffset = 6;
+            waitTime = 0;
+            desiredTagId = 4;
+            placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    //Turn to proper spike mark
+                    .turn(Math.toRadians(selectTurn))
+                    //Drive up to proper spike mark
+                    .lineToLinearHeading(selectPose)
+                    //Drop purple pixel
+                    .addDisplacementMarker(() -> {
+                        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+                    })
+                    .back(5)
+                    .lineToLinearHeading(new Pose2d(-35, -11.5, Math.toRadians(0)))
+                    .build();
+        } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
+            selectPose = new Pose2d(-32.5, -31.25,0);
+            selectTurn = -90;
+            boardOffset = -6;
+            waitTime = 0;
+            desiredTagId = 6;
+            placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    //Turn to proper spike mark
+                    .turn(Math.toRadians(selectTurn))
+                    //Drive up to proper spike mark
+                    .lineToLinearHeading(selectPose)
+                    //Drop purple pixel
+                    .addDisplacementMarker(() -> {
+                        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+                    })
+                    .back(5)
+                    .lineToLinearHeading(new Pose2d(-35, -11.5, Math.toRadians(0)))
+                    .build();
+        } else {
+            selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
+            selectTurn = 0;
+            boardOffset = 0;
+            waitTime = 0;
+            desiredTagId = 5;
+            placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    //Turn to proper spike mark
+                    .turn(Math.toRadians(selectTurn))
+                    //Drive up to proper spike mark
+                    .lineToLinearHeading(selectPose)
+                    .lineToLinearHeading(new Pose2d(-35, 2/* TODO: Get this number right */, Math.toRadians(0)))
+                    .addDisplacementMarker(() -> {
+                        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+                    })
+                    .lineToLinearHeading(new Pose2d(-35, -11.5, Math.toRadians(0)))
+                    .build();
+        }
+
+/*        TrajectorySequence placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                 //Turn to proper spike mark
                 .turn(Math.toRadians(selectTurn))
                 //Drive up to proper spike mark
@@ -144,6 +181,7 @@ public class RedLeftAutoVision extends LinearOpMode {
                 //Drive to board
                 .splineToLinearHeading(new Pose2d(36,-32.5 + boardOffset,0), Math.toRadians(-90))
                 .build();
+                */
 
         drive.followTrajectorySequence(placePurplePixel);
 
@@ -173,8 +211,7 @@ public class RedLeftAutoVision extends LinearOpMode {
         double pe = 0;
         double zrc = -0.75;
         double yrc = 4;
-        sleep(1000); //Waits for camera to pick up april tag
-        long end = System.currentTimeMillis() + 1000;
+        long end = System.currentTimeMillis() + 1500;
 
         while(System.currentTimeMillis() < end)
         {
