@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Size;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -11,20 +8,18 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.apache.commons.math3.analysis.function.Add;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name="Red Left Auto Vision", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
-public class RedLeftAutoVision extends LinearOpMode {
+@Autonomous(name="Red Left Auto Vision Lower", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+public class RedLeftAutoVisionLower extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
@@ -99,9 +94,10 @@ public class RedLeftAutoVision extends LinearOpMode {
         if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
             selectTurn = 90;
-            boardOffset = 6;
+            boardOffset = 4.5;
             waitTime = 0;
             desiredTagId = 4;
+            zeOffset = -3;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
                     .turn(Math.toRadians(selectTurn))
@@ -119,9 +115,10 @@ public class RedLeftAutoVision extends LinearOpMode {
         } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(-32.5, -31.25,0);
             selectTurn = -90;
-            boardOffset = -6;
+            boardOffset = -4.5;
             waitTime = 0;
             desiredTagId = 6;
+            zeOffset = 2;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
                     .turn(Math.toRadians(selectTurn))
@@ -139,9 +136,10 @@ public class RedLeftAutoVision extends LinearOpMode {
         } else {
             selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
             selectTurn = 180;
-            boardOffset = 0;
+            boardOffset = -1.5;
             waitTime = 0;
             desiredTagId = 5;
+            zeOffset = -2;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
                     .turn(Math.toRadians(selectTurn))
@@ -152,7 +150,7 @@ public class RedLeftAutoVision extends LinearOpMode {
                     })
                     .back(8)
                     .turn(Math.toRadians(90))
-                    //        .lineToSplineHeading(new Pose2d(-35, -11.5, Math.toRadians(0)))
+            //        .lineToSplineHeading(new Pose2d(-35, -11.5, Math.toRadians(0)))
                     .build();
         }
 
@@ -202,7 +200,7 @@ public class RedLeftAutoVision extends LinearOpMode {
         drive.followTrajectorySequence(driveToCenterOfField);
 
         //Raise slide and arm
-        slidePos = 550;
+        slidePos = 220;
         armUp = true;
         while ((slideMotor1.getCurrentPosition() < slidePos - 30 || ArmRamp.rampPos > Constants.ARM_UP_POS + 0.001) && opModeIsActive()) {
             arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
@@ -267,7 +265,7 @@ public class RedLeftAutoVision extends LinearOpMode {
         }
 
         Trajectory driveToBoard = drive.trajectoryBuilder(driveToCenterOfField.end())
-                .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze, Math.toRadians(0 + pe)))
+                .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze + zeOffset, Math.toRadians(0 + pe)))
                 .build();
         drive.followTrajectory(driveToBoard);
 
