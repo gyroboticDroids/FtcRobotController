@@ -19,8 +19,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name="Red Right Auto Fast", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
-public class RedRightAutoFaster extends LinearOpMode {
+@Autonomous(name="Red Right Auto Vision", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+public class RedRightAutoVision extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
@@ -45,16 +45,18 @@ public class RedRightAutoFaster extends LinearOpMode {
         //Sets up camera
         AprilTagProcessor tagProcessor = AprilTagProcessor.easyCreateWithDefaults();
         VisionPortal visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), tagProcessor);
+
         //Sets up sensors
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
+
         //Sets up servos
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
-
         leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         arm = hardwareMap.servo.get("armServo");
+
         //Sets up slide motors
         slideMotor1 = hardwareMap.dcMotor.get("leftSlideMotor");
         slideMotor2 = hardwareMap.dcMotor.get("rightSlideMotor");
@@ -69,17 +71,21 @@ public class RedRightAutoFaster extends LinearOpMode {
         slideMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        //Sets up drone launcher
         droneLauncher = hardwareMap.servo.get("droneLaunchServo");
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
+
         //Sets up dead wheels
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Pose2d startPose = new Pose2d(14.5, -63.75, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
+        Constants.blueAuto = false;
+
         waitForStart();
 
+        //Move into spike mark area
         Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)
-                //Move into spike mark area
                 .splineToLinearHeading(new Pose2d(11.5, -40.25, startPose.getHeading()), startPose.getHeading())
                 .lineToLinearHeading(new Pose2d(11.5, -30.25, startPose.getHeading()))
                 .build();
@@ -87,10 +93,11 @@ public class RedRightAutoFaster extends LinearOpMode {
 
         TrajectorySequence placePurplePixel;
 
+        //Detect prop
         if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(8.75, -31.25, Math.toRadians(180));
             boardOffset = 4.5;
-            zeOffset = -3;
+            zeOffset = -2;
             desiredTagId = 4;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     .turn(Math.toRadians(90))
@@ -185,13 +192,16 @@ public class RedRightAutoFaster extends LinearOpMode {
                     double yrcp = detection.ftcPose.y + yrc;
                     double prcp = detection.ftcPose.pitch;
 
+                    //Convert camera measurements to robot
+                    //https://en.wikipedia.org/wiki/Rotation_of_axes_in_two_dimensions
                     za = zrcp * Math.cos(-Math.toRadians(prcp)) + yrcp * Math.sin(-Math.toRadians(prcp));
                     ya = -zrcp * Math.sin(-Math.toRadians(prcp)) + yrcp * Math.cos(-Math.toRadians(prcp));
                     pa = -detection.ftcPose.pitch;
 
                     telemetry.addData("Tag ID", detection.id);
 
-                    ze = -1.25 + zrc - za;
+                    //Add some offsets
+                    ze = -1.25 + zrc - za - zeOffset;
                     ye = 19.2 + yrc - ya;
                     pe = 0 - pa;
 
@@ -208,19 +218,24 @@ public class RedRightAutoFaster extends LinearOpMode {
             }
         }
 
-        TrajectorySequence dropOnBoard = drive.trajectorySequenceBuilder(placePurplePixel.end())
+        //Drives up to board
+        Trajectory dropOnBoard = drive.trajectoryBuilder(placePurplePixel.end())
                 //Drive to place yellow pixel
-                .lineToLinearHeading(new Pose2d(49.5 - ye, -33.25 + boardOffset - ze + zeOffset, Math.toRadians(0 + pe)))
+                .lineToLinearHeading(new Pose2d(49.5 - ye, -33.25 + boardOffset - ze, Math.toRadians(0 + pe)))
+                .build();
                 //Drop yellow pixel
-                .addDisplacementMarker(() -> {
-                    rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
-                })
-                //Wait for gripper to open
-                .waitSeconds(0.4)
+        drive.followTrajectory(dropOnBoard);
+        //Opens gripper
+        rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
+
+        //Wait for gripper to open
+        sleep(500);
+        //Backs away from board
+        Trajectory driveBack = drive.trajectoryBuilder(dropOnBoard.end())
                 //Back up to release pixel if trapped against backdrop
                 .back(5)
                 .build();
-        drive.followTrajectorySequence(dropOnBoard);
+        drive.followTrajectory(driveBack);
 
         //Lower slide and arm
         slidePos = 0;
@@ -243,15 +258,17 @@ public class RedRightAutoFaster extends LinearOpMode {
         slideMotor1.setPower(0);
         slideMotor2.setPower(0);
 
-        TrajectorySequence moveToCorner = drive.trajectorySequenceBuilder(dropOnBoard.end())
+        TrajectorySequence moveToCorner = drive.trajectorySequenceBuilder(driveBack.end())
                 //Moves to back right corner
-                .lineToConstantHeading(new Vector2d(44.5, -60))
+                .lineToLinearHeading(new Pose2d(44.5, -57, 0))
                 //Scoots forward to get out of the way
                 .forward(10)
                 .build();
         drive.followTrajectorySequence(moveToCorner);
 
         Constants.autoEndPose = moveToCorner.end();
-        Constants.blueAuto = false;
+
+        sleep(30000);
+
     }
 }

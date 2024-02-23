@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-@Autonomous(name="Red Left Auto Purple Only", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+@Autonomous(name="Only Place Purple Pixel Right", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
 public class OnlyPlacePurplePixelRight extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
@@ -36,12 +36,15 @@ public class OnlyPlacePurplePixelRight extends LinearOpMode {
         //Sets up sensors
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
+
         //Sets up servos
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
+
         leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         arm = hardwareMap.servo.get("armServo");
+
         //Sets up slide motors
         slideMotor1 = hardwareMap.dcMotor.get("leftSlideMotor");
         slideMotor2 = hardwareMap.dcMotor.get("rightSlideMotor");
@@ -56,6 +59,9 @@ public class OnlyPlacePurplePixelRight extends LinearOpMode {
 
         droneLauncher = hardwareMap.servo.get("droneLaunchServo");
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
+
+        Constants.blueAuto = false;
+
         //Sets up dead wheels
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Pose2d startPose = new Pose2d(14.5, -63.75, Math.toRadians(90));
@@ -63,14 +69,15 @@ public class OnlyPlacePurplePixelRight extends LinearOpMode {
 
         waitForStart();
 
+        //Move into spike mark area
         Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)
-            //Move into spike mark area
             .splineToLinearHeading(new Pose2d(11.75, -30.25, startPose.getHeading()), startPose.getHeading())
             .build();
         drive.followTrajectory(approachSpikeMarks);
 
         Trajectory placePurplePixel;
 
+        //Detect prop
         if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(7.75, -31.25, Math.toRadians(180));
             boardOffset = 4.25;
@@ -114,5 +121,6 @@ public class OnlyPlacePurplePixelRight extends LinearOpMode {
                 .build();
         }
         drive.followTrajectory(placePurplePixel);
+        Constants.autoEndPose = placePurplePixel.end();
     }
 }
