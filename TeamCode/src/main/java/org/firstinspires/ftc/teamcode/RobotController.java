@@ -209,9 +209,9 @@ public class RobotController extends LinearOpMode{
     int slidePos = 0;
     boolean armPos = false;
     boolean slideResetOneShot = false;
+    double slidePosError, slidePower = 0, lastSlidePower = 0, slidePowerIncr = 0.1;
     public void AttachmentController()
     {
-        double slidePosError, slidePower;
         //Sets slide and arm position when button is pressed
         if(gamepad2.a) {
             slidePos = Constants.SLIDE_LOW_POS;
@@ -259,7 +259,7 @@ public class RobotController extends LinearOpMode{
             slidePos = 1000;
 
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
-            slidePower = slidePosError * 10 / 1000;
+            slidePower = slidePosError * 5 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.75), 0.75);
 
             slideMotor1.setPower(slidePower);
@@ -268,8 +268,13 @@ public class RobotController extends LinearOpMode{
         else {
             //Moves slides
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
-            slidePower = slidePosError * 1 / 1000;
+            slidePower = slidePosError * 1.25 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.7), 0.85);
+
+            if(slidePower - lastSlidePower > slidePowerIncr)
+            {
+                slidePower = lastSlidePower + slidePowerIncr;
+            }
 
             slideMotor1.setPower(slidePower);
             slideMotor2.setPower(slidePower);
@@ -299,34 +304,9 @@ public class RobotController extends LinearOpMode{
             arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armPos));
         }
         telemetry.addData("Arm pos", armPos);
-    }
 
-//    double rampPos = Constants.ARM_DOWN_POS;
-//    public double Ramp(double firstPos, double secondPos, boolean selectPos)
-//    {
-//        double rampRate = 0.015;
-//        if(secondPos>firstPos){
-//            //Slows down arm servo so it does not break itself
-//            if(selectPos){
-//                rampPos += rampRate;
-//            }
-//            else{
-//                rampPos -= rampRate;
-//            }
-//            rampPos = Range.clip(rampPos,firstPos,secondPos);
-//        }
-//        else{
-//            //Slows down arm servo so it does not break itself
-//            if(selectPos){
-//                rampPos -= rampRate;
-//            }
-//            else{
-//                rampPos += rampRate;
-//            }
-//            rampPos = Range.clip(rampPos,secondPos,firstPos);
-//        }
-//        return rampPos;
-//    }
+        lastSlidePower = slideMotor1.getPower();
+    }
 
     public void GyroTurn()
     {
