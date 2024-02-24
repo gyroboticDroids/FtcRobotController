@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -19,8 +18,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name="Red Right Auto Vision", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
-public class RedRightAutoVision extends LinearOpMode {
+@Autonomous(name="Blue Left Auto Vision", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+public class BlueLeftAutoVision extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
@@ -77,44 +76,28 @@ public class RedRightAutoVision extends LinearOpMode {
 
         //Sets up dead wheels
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Pose2d startPose = new Pose2d(14.5, -63.75, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(14.5, 63.75, Math.toRadians(270));
         drive.setPoseEstimate(startPose);
 
-        Constants.blueAuto = false;
+        Constants.blueAuto = true;
 
         waitForStart();
 
         //Move into spike mark area
         Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(11.5, -40.25, startPose.getHeading()), startPose.getHeading())
-                .lineToLinearHeading(new Pose2d(11.5, -30.25, startPose.getHeading()))
+                .splineToLinearHeading(new Pose2d(11.5, 40.25, startPose.getHeading()), startPose.getHeading())
+                .lineToLinearHeading(new Pose2d(11.5, 30.25, startPose.getHeading()))
                 .build();
         drive.followTrajectory(approachSpikeMarks);
 
         TrajectorySequence placePurplePixel;
 
         //Detect prop
-        if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
-            selectPose = new Pose2d(8.75, -31.25, Math.toRadians(180));
-            boardOffset = 4.5;
-            zeOffset = -2;
-            desiredTagId = 4;
-            placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
-                    .turn(Math.toRadians(90))
-                    //Drive up to proper spike mark
-                    .lineToLinearHeading(selectPose)
-                    //Drop purple pixel
-                    .addDisplacementMarker(() -> {
-                        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
-                    })
-                    .back(5)
-                    .lineToLinearHeading(new Pose2d(36,-33.25 + boardOffset,0))
-                    .build();
-        } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
-            selectPose = new Pose2d(14.75, -31.25,0);
+        if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
+            selectPose = new Pose2d(8.75, 31.25, Math.toRadians(180));
             boardOffset = -4.5;
-            zeOffset = 2;
-            desiredTagId = 6;
+            zeOffset = 1;
+            desiredTagId = 3;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     .turn(Math.toRadians(-90))
                     //Drive up to proper spike mark
@@ -124,16 +107,32 @@ public class RedRightAutoVision extends LinearOpMode {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
                     .back(5)
-                    .strafeRight(16.75)
+                    .lineToLinearHeading(new Pose2d(36,35.5 + boardOffset,0))
+                    .build();
+        } else if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
+            selectPose = new Pose2d(14.75, 31.25,0);
+            boardOffset = 4.5;
+            zeOffset = -1;
+            desiredTagId = 1;
+            placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    .turn(Math.toRadians(90))
+                    //Drive up to proper spike mark
+                    .lineToLinearHeading(selectPose)
+                    //Drop purple pixel
+                    .addDisplacementMarker(() -> {
+                        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+                    })
+                    .back(5)
+                    .strafeLeft(16.75)
                     .waitSeconds(0.1)
-                    .splineToLinearHeading(new Pose2d(36,-33.25 + boardOffset,0), Math.toRadians(90))
+                    .splineToLinearHeading(new Pose2d(36,35.5 + boardOffset,0), Math.toRadians(-90))
                     .build();
 
         } else {
-            selectPose = new Pose2d(11.75, -31.5, Math.toRadians(90));
+            selectPose = new Pose2d(11.75, 31.5, Math.toRadians(-90));
             boardOffset = -1.5;
             zeOffset = -0.5;
-            desiredTagId = 5;
+            desiredTagId = 2;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Drive up to proper spike mark
                     .lineToLinearHeading(selectPose)
@@ -142,7 +141,7 @@ public class RedRightAutoVision extends LinearOpMode {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
                     .back(7)
-                    .lineToLinearHeading(new Pose2d(36,-33.25 + boardOffset,0))
+                    .lineToLinearHeading(new Pose2d(36,35.5 + boardOffset,0))
                     .build();
         }
 
@@ -155,7 +154,7 @@ public class RedRightAutoVision extends LinearOpMode {
             arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
-            slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
+            slidePower = Math.min(Math.max(slidePower, -0.6), 0.6);
 
             slideMotor1.setPower(slidePower);
             slideMotor2.setPower(slidePower);
@@ -202,7 +201,7 @@ public class RedRightAutoVision extends LinearOpMode {
 
                     //Add some offsets
                     ze = -1.25 + zrc - za - zeOffset;
-                    ye = 19.2 + yrc - ya;
+                    ye = 20 + yrc - ya;
                     pe = 0 - pa;
 
                     telemetry.addData("ze", ze);
@@ -221,7 +220,7 @@ public class RedRightAutoVision extends LinearOpMode {
         //Drives up to board
         Trajectory dropOnBoard = drive.trajectoryBuilder(placePurplePixel.end())
                 //Drive to place yellow pixel
-                .lineToLinearHeading(new Pose2d(49.5 - ye, -33.25 + boardOffset - ze, Math.toRadians(0 + pe)))
+                .lineToLinearHeading(new Pose2d(49.5 - ye, 35.5 + boardOffset - ze, Math.toRadians(0 + pe)))
                 .build();
                 //Drop yellow pixel
         drive.followTrajectory(dropOnBoard);
@@ -244,7 +243,7 @@ public class RedRightAutoVision extends LinearOpMode {
             arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
-            slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
+            slidePower = Math.min(Math.max(slidePower, -0.6), 0.6);
 
             slideMotor1.setPower(slidePower);
             slideMotor2.setPower(slidePower);
@@ -260,7 +259,7 @@ public class RedRightAutoVision extends LinearOpMode {
 
         TrajectorySequence moveToCorner = drive.trajectorySequenceBuilder(driveBack.end())
                 //Moves to back right corner
-                .lineToLinearHeading(new Pose2d(44.5, -59, 0))
+                .lineToLinearHeading(new Pose2d(44.5, 59, 0))
                 //Scoots forward to get out of the way
                 .forward(10)
                 .build();

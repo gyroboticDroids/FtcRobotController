@@ -259,7 +259,7 @@ public class RobotController extends LinearOpMode{
             slidePos = 1000;
 
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
-            slidePower = slidePosError * 5 / 500;
+            slidePower = slidePosError * 10 / 1000;
             slidePower = Math.min(Math.max(slidePower, -0.75), 0.75);
 
             slideMotor1.setPower(slidePower);
@@ -268,7 +268,7 @@ public class RobotController extends LinearOpMode{
         else {
             //Moves slides
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
-            slidePower = slidePosError * 1 / 500;
+            slidePower = slidePosError * 1 / 1000;
             slidePower = Math.min(Math.max(slidePower, -0.7), 0.85);
 
             slideMotor1.setPower(slidePower);
