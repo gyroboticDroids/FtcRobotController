@@ -222,6 +222,9 @@ public class RobotController extends LinearOpMode{
         } else if (gamepad2.y) {
             slidePos = Constants.SLIDE_HIGH_POS;
             armPos = true;
+        } else if (gamepad2.x) {
+            slidePos = Constants.SLIDE_STACK_POS;
+            armPos = false;
         }
         //Resets slide and arm positions
         if(gamepad2.dpad_down)
