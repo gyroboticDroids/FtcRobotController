@@ -19,7 +19,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name="Red Left Auto Vision With White", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+@Autonomous(name="Red Left Auto Vision With White", group = "Centerstage Autonomous Red", preselectTeleOp = "RobotController")
 public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
@@ -102,7 +102,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
             selectTurn = 90;
             boardOffset = 6;
             zeOffset = 0;
-            waitTime = 1;
+            waitTime = 0;
             desiredTagId = 4;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -142,7 +142,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
             selectTurn = 180;
             boardOffset = 0;
             zeOffset = 0;
-            waitTime = 2;
+            waitTime = 0;
             desiredTagId = 5;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -191,7 +191,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
         //Grabs white pixel
         leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
 
-        sleep(125);
+        sleep(0);
 
         TrajectorySequence backUp = drive.trajectorySequenceBuilder(actuallyPickUpWhitePixel.end())
                 //Backs up a little bit to get room
@@ -233,7 +233,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
 
         leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
-        sleep(125);
+        sleep(0);
 
         TrajectorySequence holdWhitePixel = drive.trajectorySequenceBuilder(goForward.end())
                 .turn(Math.toRadians(-180))
@@ -354,14 +354,18 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
                     .build();
             drive.followTrajectorySequence(driveToBoard);
 
-            moveWhitePixel = driveToBoard;
             //Opens grippers
             rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
+            moveWhitePixel = drive.trajectorySequenceBuilder(driveToBoard.end())
+                    .back(2)
+                    .forward(2)
+                    .build();
+            drive.followTrajectorySequence(moveWhitePixel);
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
         }
 
         //Waits for pixel to drop
-        sleep(125);
+        sleep(0);
         //Drives back from board
         Trajectory driveBackFromBoard = drive.trajectoryBuilder(moveWhitePixel.end())
                 .back(5)
