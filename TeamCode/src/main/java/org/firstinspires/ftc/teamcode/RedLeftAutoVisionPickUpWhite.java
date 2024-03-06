@@ -102,7 +102,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
             selectTurn = 90;
             boardOffset = 6;
             zeOffset = 0;
-            waitTime = 0;
+            waitTime = 2;
             desiredTagId = 4;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -142,7 +142,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
             selectTurn = 180;
             boardOffset = 0;
             zeOffset = 0;
-            waitTime = 0;
+            waitTime = 1;
             desiredTagId = 5;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -184,7 +184,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
       //  sleep(2147483647);
         TrajectorySequence actuallyPickUpWhitePixel = drive.trajectorySequenceBuilder(placePurplePixel.end())
                 //Drives into pixel stack
-                .splineToLinearHeading(new Pose2d(-60, -9.5, Math.toRadians(180)), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(-60.5, -9, Math.toRadians(180)), Math.toRadians(180))
                 .build();
         drive.followTrajectorySequence(actuallyPickUpWhitePixel);
 
@@ -334,14 +334,14 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
         if(desiredTagId == 4){
             //Drives forward to board
             Trajectory driveToBoard = drive.trajectoryBuilder(driveToCenterOfField.end())
-                    .lineToLinearHeading(new Pose2d(48 - ye, -32.5 - 12 /*# is white pixel offset*/ + boardOffset - ze, Math.toRadians(0 + pe)))
+                    .lineToLinearHeading(new Pose2d(48 - ye, -32.5 - 15 /*# is white pixel offset*/ + boardOffset - ze, Math.toRadians(0 + pe)))
                     .build();
             drive.followTrajectory(driveToBoard);
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
 
             moveWhitePixel = drive.trajectorySequenceBuilder(driveToBoard.end())
                     .back(2)
-                    .lineToConstantHeading(new Vector2d(driveToBoard.end().getX(), driveToBoard.end().getY() + 12))
+                    .lineToConstantHeading(new Vector2d(driveToBoard.end().getX(), driveToBoard.end().getY() + 15))
                     .build();
             drive.followTrajectorySequence(moveWhitePixel);
 

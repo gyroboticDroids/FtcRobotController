@@ -185,7 +185,7 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
         //  sleep(2147483647);
         TrajectorySequence actuallyPickUpWhitePixel = drive.trajectorySequenceBuilder(placePurplePixel.end())
                 //Drives into pixel stack
-                .splineToLinearHeading(new Pose2d(-60, 13.75, Math.toRadians(180)), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(-60, 14.25, Math.toRadians(180)), Math.toRadians(180))
                 .build();
         drive.followTrajectorySequence(actuallyPickUpWhitePixel);
 
