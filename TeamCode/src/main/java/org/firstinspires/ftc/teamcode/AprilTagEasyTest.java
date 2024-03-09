@@ -35,11 +35,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /*
  * This OpMode illustrates the basics of AprilTag recognition and pose estimation, using
@@ -125,6 +127,17 @@ public class AprilTagEasyTest extends LinearOpMode {
         if (USE_WEBCAM) {
             visionPortal = VisionPortal.easyCreateWithDefaults(
                 hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
+
+
+            ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
+            if(exposureControl.getMode() != ExposureControl.Mode.Manual)
+            {
+                exposureControl.setMode(ExposureControl.Mode.Manual);
+                sleep(50);
+            }
+
+            exposureControl.setExposure(1, TimeUnit.MILLISECONDS);
+            sleep(20);
         } else {
             visionPortal = VisionPortal.easyCreateWithDefaults(
                 BuiltinCameraDirection.BACK, aprilTag);
