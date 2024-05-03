@@ -3,25 +3,21 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.R;
-import org.firstinspires.ftc.teamcode.fininestatemachines.LeftGripper;
-import org.firstinspires.ftc.teamcode.fininestatemachines.RightGripper;
+import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.functions.ArmRamp;
 import org.firstinspires.ftc.teamcode.functions.Constants;
-import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
-
-import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@TeleOp(name="RobotController")
-public class RobotController extends LinearOpMode{
+@TeleOp(name="OldRobotController")
+public class OldRobotController extends LinearOpMode{
     // Initializing motors and variables
     DcMotor frontLeftMotor;
     DcMotor rearLeftMotor;
@@ -30,11 +26,11 @@ public class RobotController extends LinearOpMode{
     DcMotor slideMotor1;
     DcMotor slideMotor2;
     Servo arm;
+    Servo leftGripper;
+    Servo rightGripper;
     Servo droneLauncher;
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
-    RightGripper rightGripper;
-    LeftGripper leftGripper;
 
     // Variables used for auto turn
     double turnError = 0;
@@ -75,6 +71,8 @@ public class RobotController extends LinearOpMode{
         slideMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //Setting up servos
         arm = hardwareMap.servo.get("armServo");
+        leftGripper = hardwareMap.servo.get("leftGripperServo");
+        rightGripper = hardwareMap.servo.get("rightGripperServo");
         droneLauncher = hardwareMap.servo.get("droneLaunchServo");
 
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
@@ -91,8 +89,8 @@ public class RobotController extends LinearOpMode{
         waitForStart();
         //Set start servo positions
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
-        leftGripper.OpenGripper();
-        rightGripper.OpenGripper();
+        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+        rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
 
         if (isStopRequested()) return;
 
@@ -234,8 +232,8 @@ public class RobotController extends LinearOpMode{
             slidePos = 0;
             armPos = false;
             //Resets gripper position
-            leftGripper.OpenGripper();
-            rightGripper.OpenGripper();
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+            rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
         }
         //Manual slide movement
         slidePos += -gamepad2.left_stick_y * 55;
@@ -290,8 +288,6 @@ public class RobotController extends LinearOpMode{
         telemetry.addData("slidePosition", slidePos);
         telemetry.addData("Current Slide Position", slideMotor1.getCurrentPosition());
         //Gripper controls
-
-
         if(gamepad2.left_bumper){
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
         }
