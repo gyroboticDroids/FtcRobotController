@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto.old;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.functions.ArmRamp;
+import org.firstinspires.ftc.teamcode.functions.Constants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -19,9 +21,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name="Red Left Auto Vision Lower", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+@Autonomous(name="Red Left Auto Vision", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
 @Disabled
-public class RedLeftAutoVisionLower extends LinearOpMode {
+public class RedLeftAutoVision extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
@@ -56,6 +58,7 @@ public class RedLeftAutoVisionLower extends LinearOpMode {
         //Sets grippers and other servos
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
+
         leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         arm = hardwareMap.servo.get("armServo");
@@ -74,7 +77,7 @@ public class RedLeftAutoVisionLower extends LinearOpMode {
         slideMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //Sets up drone launcher
+        //Sets drone launcher
         droneLauncher = hardwareMap.servo.get("droneLaunchServo");
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
 
@@ -100,8 +103,8 @@ public class RedLeftAutoVisionLower extends LinearOpMode {
         if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
             selectTurn = 90;
-            boardOffset = 4.5;
-            zeOffset = -3;
+            boardOffset = 6;
+            zeOffset = 0;
             waitTime = 8;
             desiredTagId = 4;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
@@ -121,8 +124,8 @@ public class RedLeftAutoVisionLower extends LinearOpMode {
         } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(-32.5, -31.25,0);
             selectTurn = -90;
-            boardOffset = -4.5;
-            zeOffset = 2;
+            boardOffset = -6;
+            zeOffset = 0;
             waitTime = 8;
             desiredTagId = 6;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
@@ -142,8 +145,8 @@ public class RedLeftAutoVisionLower extends LinearOpMode {
         } else {
             selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
             selectTurn = 180;
-            boardOffset = -1.5;
-            zeOffset = -2;
+            boardOffset = 0;
+            zeOffset = 0;
             waitTime = 10;
             desiredTagId = 5;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
@@ -174,7 +177,7 @@ public class RedLeftAutoVisionLower extends LinearOpMode {
         drive.followTrajectorySequence(driveToCenterOfField);
 
         //Raise slide and arm
-        slidePos = 220;
+        slidePos = 550;
         armUp = true;
         double lastSlidePower = 0, slidePowerIncr = 0.1;
         while ((slideMotor1.getCurrentPosition() < slidePos - 30 || ArmRamp.rampPos > Constants.ARM_UP_POS + 0.001) && opModeIsActive()) {
@@ -193,7 +196,6 @@ public class RedLeftAutoVisionLower extends LinearOpMode {
             telemetry.addData("Slide Pos", slideMotor1.getCurrentPosition());
             telemetry.addData("Arm Pos", arm.getPosition());
             telemetry.update();
-
             lastSlidePower = slideMotor1.getPower();
         }
         slideMotor1.setPower(0);
@@ -250,7 +252,7 @@ public class RedLeftAutoVisionLower extends LinearOpMode {
             }
         }
 
-        //Drives up to board
+        //Drives forward to board
         Trajectory driveToBoard = drive.trajectoryBuilder(driveToCenterOfField.end())
                 .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze, Math.toRadians(0 + pe)))
                 .build();

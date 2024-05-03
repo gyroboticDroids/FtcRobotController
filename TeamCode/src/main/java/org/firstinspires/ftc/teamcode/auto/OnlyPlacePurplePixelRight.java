@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.functions.Constants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 @Autonomous(name="Only Place Purple Pixel Right", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")

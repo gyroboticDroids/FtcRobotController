@@ -1,17 +1,18 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto.old;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.functions.ArmRamp;
+import org.firstinspires.ftc.teamcode.functions.Constants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -19,10 +20,10 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-@Autonomous(name="Blue Left Auto Vision", group = "Centerstage Autonomous Blue", preselectTeleOp = "RobotController")
-public class BlueLeftAutoVision extends LinearOpMode {
+@Autonomous(name="Red Left Auto Vision Lower", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+@Disabled
+public class RedLeftAutoVisionLower extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
@@ -35,34 +36,33 @@ public class BlueLeftAutoVision extends LinearOpMode {
     double boardOffset = 0, zeOffset = 0;
     boolean armUp = false;
     int slidePos;
+    double rampPos = 0.501;
     Servo arm;
     double slidePosError;
     double slidePower;
+    long waitTime;
     int desiredTagId;
     Servo droneLauncher;
-    VisionPortal visionPortal;
 
     @Override
     public void runOpMode() throws InterruptedException
     {
         //Sets up camera
         AprilTagProcessor tagProcessor = AprilTagProcessor.easyCreateWithDefaults();
-        visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), tagProcessor);
+        VisionPortal visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), tagProcessor);
 
-        setManualExposure(1, 255);
-
-        //Sets up sensors
+        //Sets sensors
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
         rightSensor = hardwareMap.get(DistanceSensor.class, "checkRight");
 
-        //Sets up servos
+        //Sets grippers and other servos
         leftGripper = hardwareMap.servo.get("leftGripperServo");
         rightGripper = hardwareMap.servo.get("rightGripperServo");
         leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
         arm = hardwareMap.servo.get("armServo");
 
-        //Sets up slide motors
+        //Sets slide motors
         slideMotor1 = hardwareMap.dcMotor.get("leftSlideMotor");
         slideMotor2 = hardwareMap.dcMotor.get("rightSlideMotor");
 
@@ -82,46 +82,33 @@ public class BlueLeftAutoVision extends LinearOpMode {
 
         //Sets up dead wheels
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Pose2d startPose = new Pose2d(14.5, 63.75, Math.toRadians(270));
+        Pose2d startPose = new Pose2d(-38.25, -63.75, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
-        Constants.blueAuto = true;
+        Constants.blueAuto = false;
 
         waitForStart();
 
         //Move into spike mark area
         Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(11.5, 40.25, startPose.getHeading()), startPose.getHeading())
-                .lineToLinearHeading(new Pose2d(11.5, 30.25, startPose.getHeading()))
+                .splineToLinearHeading(new Pose2d(-35, -40.25, startPose.getHeading()), startPose.getHeading())
+                .lineToLinearHeading(new Pose2d(-35, -30.25, startPose.getHeading()))
                 .build();
         drive.followTrajectory(approachSpikeMarks);
 
         TrajectorySequence placePurplePixel;
 
         //Detect prop
-        if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
-            selectPose = new Pose2d(8.75, 31.25, Math.toRadians(180));
-            boardOffset = -4.5;
-            zeOffset = 1;
-            desiredTagId = 3;
-            placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
-                    .turn(Math.toRadians(-90))
-                    //Drive up to proper spike mark
-                    .lineToLinearHeading(selectPose)
-                    //Drop purple pixel
-                    .addDisplacementMarker(() -> {
-                        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
-                    })
-                    .back(5)
-                    .lineToLinearHeading(new Pose2d(36,35.5 + boardOffset,0))
-                    .build();
-        } else if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
-            selectPose = new Pose2d(14.75, 31.25,0);
+        if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
+            selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
+            selectTurn = 90;
             boardOffset = 4.5;
-            zeOffset = -1;
-            desiredTagId = 1;
+            zeOffset = -3;
+            waitTime = 8;
+            desiredTagId = 4;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
-                    .turn(Math.toRadians(90))
+                    //Turn to proper spike mark
+                    .turn(Math.toRadians(selectTurn))
                     //Drive up to proper spike mark
                     .lineToLinearHeading(selectPose)
                     //Drop purple pixel
@@ -129,17 +116,20 @@ public class BlueLeftAutoVision extends LinearOpMode {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
                     .back(5)
-                    .strafeLeft(16.75)
-                    .waitSeconds(0.1)
-                    .splineToLinearHeading(new Pose2d(36,35.5 + boardOffset,0), Math.toRadians(-90))
+                    .turn(Math.toRadians(-90))
+                    .lineToLinearHeading(new Pose2d(-37, -11.5, Math.toRadians(90)))
+                    .turn(Math.toRadians(-90))
                     .build();
-
-        } else {
-            selectPose = new Pose2d(11.75, 31.5, Math.toRadians(-90));
-            boardOffset = -1.5;
-            zeOffset = -0.5;
-            desiredTagId = 2;
+        } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
+            selectPose = new Pose2d(-32.5, -31.25,0);
+            selectTurn = -90;
+            boardOffset = -4.5;
+            zeOffset = 2;
+            waitTime = 8;
+            desiredTagId = 6;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    //Turn to proper spike mark
+                    .turn(Math.toRadians(selectTurn))
                     //Drive up to proper spike mark
                     .lineToLinearHeading(selectPose)
                     //Drop purple pixel
@@ -147,11 +137,43 @@ public class BlueLeftAutoVision extends LinearOpMode {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
                     .back(7)
-                    .lineToLinearHeading(new Pose2d(36,35.5 + boardOffset,0))
+                    .turn(Math.toRadians(90))
+                    .lineToLinearHeading(new Pose2d(-38, -11.5, Math.toRadians(90)))
+                    .turn(Math.toRadians(-90))
+                    .build();
+        } else {
+            selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
+            selectTurn = 180;
+            boardOffset = -1.5;
+            zeOffset = -2;
+            waitTime = 10;
+            desiredTagId = 5;
+            placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
+                    //Turn to proper spike mark
+                    .turn(Math.toRadians(selectTurn))
+                    //Drive up to proper spike mark
+                    .lineToLinearHeading(new Pose2d(-40, -16, Math.toRadians(270.001)))
+                    .addDisplacementMarker(() -> {
+                        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+                    })
+                    .back(8)
+                    .turn(Math.toRadians(90))
                     .build();
         }
 
         drive.followTrajectorySequence(placePurplePixel);
+
+        //Waits for teammate to finish
+        sleep(waitTime * 1000);
+
+        TrajectorySequence driveToCenterOfField = drive.trajectorySequenceBuilder(placePurplePixel.end())
+                //Drive towards center of field
+                .lineToLinearHeading(new Pose2d(15,-9,0))
+                //Drive to board
+                .splineToLinearHeading(new Pose2d(36,-32.5 + boardOffset,0), Math.toRadians(-90))
+                .build();
+
+        drive.followTrajectorySequence(driveToCenterOfField);
 
         //Raise slide and arm
         slidePos = 220;
@@ -170,7 +192,6 @@ public class BlueLeftAutoVision extends LinearOpMode {
 
             slideMotor1.setPower(slidePower);
             slideMotor2.setPower(slidePower);
-
             telemetry.addData("Slide Pos", slideMotor1.getCurrentPosition());
             telemetry.addData("Arm Pos", arm.getPosition());
             telemetry.update();
@@ -215,7 +236,7 @@ public class BlueLeftAutoVision extends LinearOpMode {
 
                     //Add some offsets
                     ze = -1.25 + zrc - za - zeOffset;
-                    ye = 20 + yrc - ya;
+                    ye = 19.2 + yrc - ya;
                     pe = 0 - pa;
 
                     telemetry.addData("ze", ze);
@@ -232,23 +253,21 @@ public class BlueLeftAutoVision extends LinearOpMode {
         }
 
         //Drives up to board
-        Trajectory dropOnBoard = drive.trajectoryBuilder(placePurplePixel.end())
-                //Drive to place yellow pixel
-                .lineToLinearHeading(new Pose2d(49.5 - ye, 35.5 + boardOffset - ze, Math.toRadians(0 + pe)))
+        Trajectory driveToBoard = drive.trajectoryBuilder(driveToCenterOfField.end())
+                .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze, Math.toRadians(0 + pe)))
                 .build();
-                //Drop yellow pixel
-        drive.followTrajectory(dropOnBoard);
+        drive.followTrajectory(driveToBoard);
         //Opens gripper
         rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
-
-        //Wait for gripper to open
+        //Waits for pixel to drop
         sleep(500);
-        //Backs away from board
-        Trajectory driveBack = drive.trajectoryBuilder(dropOnBoard.end())
-                //Back up to release pixel if trapped against backdrop
+        //Drives back from board
+        Trajectory driveBackFromBoard = drive.trajectoryBuilder(driveToBoard.end())
                 .back(5)
                 .build();
-        drive.followTrajectory(driveBack);
+        drive.followTrajectory(driveBackFromBoard);
+
+        Constants.autoEndPose = driveBackFromBoard.end();
 
         //Lower slide and arm
         slidePos = 0;
@@ -257,7 +276,7 @@ public class BlueLeftAutoVision extends LinearOpMode {
             arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 3 / 500;
-            slidePower = Math.min(Math.max(slidePower, -0.6), 0.6);
+            slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
 
             slideMotor1.setPower(slidePower);
             slideMotor2.setPower(slidePower);
@@ -271,56 +290,6 @@ public class BlueLeftAutoVision extends LinearOpMode {
         slideMotor1.setPower(0);
         slideMotor2.setPower(0);
 
-        TrajectorySequence moveToCorner = drive.trajectorySequenceBuilder(driveBack.end())
-                //Moves to back right corner
-                .lineToLinearHeading(new Pose2d(44.5, 59, 0))
-                //Scoots forward to get out of the way
-                .forward(10)
-                .build();
-        drive.followTrajectorySequence(moveToCorner);
-
-        Constants.autoEndPose = moveToCorner.end();
-
         sleep(30000);
-
-    }
-
-    private boolean    setManualExposure(int exposureMS, int gain) {
-        // Ensure Vision Portal has been setup.
-        if (visionPortal == null) {
-            return false;
-        }
-
-        // Wait for the camera to be open
-        if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
-            telemetry.addData("Camera", "Waiting");
-            telemetry.update();
-            while (!isStopRequested() && (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
-                sleep(20);
-            }
-            telemetry.addData("Camera", "Ready");
-            telemetry.update();
-        }
-
-        // Set camera controls unless we are stopping.
-        if (!isStopRequested())
-        {
-            // Set exposure.  Make sure we are in Manual Mode for these values to take effect.
-            ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
-            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
-                exposureControl.setMode(ExposureControl.Mode.Manual);
-                sleep(50);
-            }
-            exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
-            sleep(20);
-
-            // Set Gain.
-            GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
-            gainControl.setGain(gain);
-            sleep(20);
-            return (true);
-        } else {
-            return (false);
-        }
     }
 }
