@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.fininestatemachines.LeftGripper;
 import org.firstinspires.ftc.teamcode.fininestatemachines.RightGripper;
 import org.firstinspires.ftc.teamcode.functions.ArmRamp;
@@ -20,7 +19,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import java.util.ArrayList;
 import java.util.List;
 
-@TeleOp(name="RobotController")
+@TeleOp(name="RobotController2")
 public class RobotController extends LinearOpMode{
     // Initializing motors and variables
     DcMotor frontLeftMotor;
@@ -289,22 +288,11 @@ public class RobotController extends LinearOpMode{
         telemetry.addData("slideMotor1 Power", slideMotor1.getPower());
         telemetry.addData("slidePosition", slidePos);
         telemetry.addData("Current Slide Position", slideMotor1.getCurrentPosition());
+
         //Gripper controls
+        leftGripper.LeftGripperMaster(gamepad2.left_bumper, gamepad2.left_trigger > 0.5);
+        rightGripper.RightGripperMaster(gamepad2.right_bumper, gamepad2.right_trigger > 0.5);
 
-
-        if(gamepad2.left_bumper){
-            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
-        }
-        else if(gamepad2.left_trigger > 0.5){
-            leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
-        }
-
-        if(gamepad2.right_bumper){
-            rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
-        }
-        else if(gamepad2.right_trigger > 0.5){
-            rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
-        }
         //Sets arm position
         if(armPos || slideMotor1.getCurrentPosition() < 550)
         {

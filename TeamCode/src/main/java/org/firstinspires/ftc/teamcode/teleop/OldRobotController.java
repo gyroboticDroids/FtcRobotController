@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.functions.Constants;
 import java.util.ArrayList;
 import java.util.List;
 
-@TeleOp(name="OldRobotController")
+@TeleOp(name="RobotController")
 public class OldRobotController extends LinearOpMode{
     // Initializing motors and variables
     DcMotor frontLeftMotor;
