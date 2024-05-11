@@ -245,6 +245,34 @@ public class RedRightAutoVision extends LinearOpMode {
 
         //Wait for gripper to open
         sleep(500);
+
+        //Raise slide
+        slidePos = 300;
+        armUp = true;
+        lastSlidePower = 0;
+        slidePowerIncr = 0.1;
+        while ((slideMotor1.getCurrentPosition() < slidePos - 30 || ArmRamp.rampPos > Constants.ARM_UP_POS + 0.001) && opModeIsActive()) {
+            arm.setPosition(ArmRamp.Ramp(Constants.ARM_DOWN_POS, Constants.ARM_UP_POS, armUp));
+            slidePosError = slidePos - slideMotor1.getCurrentPosition();
+            slidePower = slidePosError * 3 / 500;
+            slidePower = Math.min(Math.max(slidePower, -0.6), 0.75);
+
+            if(slidePower - lastSlidePower > slidePowerIncr)
+            {
+                slidePower = lastSlidePower + slidePowerIncr;
+            }
+
+            slideMotor1.setPower(slidePower);
+            slideMotor2.setPower(slidePower);
+            telemetry.addData("Slide Pos", slideMotor1.getCurrentPosition());
+            telemetry.addData("Arm Pos", arm.getPosition());
+            telemetry.update();
+
+            lastSlidePower = slideMotor1.getPower();
+        }
+        slideMotor1.setPower(0);
+        slideMotor2.setPower(0);
+
         //Backs away from board
         Trajectory driveBack = drive.trajectoryBuilder(dropOnBoard.end())
                 //Back up to release pixel if trapped against backdrop

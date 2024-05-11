@@ -3,23 +3,20 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.fininestatemachines.LeftGripper;
-import org.firstinspires.ftc.teamcode.fininestatemachines.RightGripper;
+import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.functions.ArmRamp;
 import org.firstinspires.ftc.teamcode.functions.Constants;
-import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
-
-import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@TeleOp(name="RobotController2")
+@TeleOp(name="RobotController")
 public class RobotController extends LinearOpMode{
     // Initializing motors and variables
     DcMotor frontLeftMotor;
@@ -29,11 +26,11 @@ public class RobotController extends LinearOpMode{
     DcMotor slideMotor1;
     DcMotor slideMotor2;
     Servo arm;
+    Servo leftGripper;
+    Servo rightGripper;
     Servo droneLauncher;
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;
-    RightGripper rightGripper;
-    LeftGripper leftGripper;
 
     // Variables used for auto turn
     double turnError = 0;
@@ -74,6 +71,8 @@ public class RobotController extends LinearOpMode{
         slideMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //Setting up servos
         arm = hardwareMap.servo.get("armServo");
+        leftGripper = hardwareMap.servo.get("leftGripperServo");
+        rightGripper = hardwareMap.servo.get("rightGripperServo");
         droneLauncher = hardwareMap.servo.get("droneLaunchServo");
 
         leftSensor = hardwareMap.get(DistanceSensor.class, "checkLeft");
@@ -90,13 +89,13 @@ public class RobotController extends LinearOpMode{
         waitForStart();
         //Set start servo positions
         droneLauncher.setPosition(Constants.DRONE_START_POSITION);
-        leftGripper.OpenGripper();
-        rightGripper.OpenGripper();
+        leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+        rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
 
         if (isStopRequested()) return;
 
-        double slowingDown = 4;
-        double slowDownTurning = 4;
+        double slowingDown;
+        double slowDownTurning;
 
         while (opModeIsActive()) {
 
@@ -107,18 +106,20 @@ public class RobotController extends LinearOpMode{
                 droneLauncher.setPosition(Constants.DRONE_RELEASE_POSITION);
             }
             //Slows down robot move speed for better control
-            if(Math.abs(gamepad1.right_stick_x) > 0.3 || Math.abs(gamepad1.right_stick_y) > 0.3 || gamepad1.right_stick_button || slidePos > 100){
+            if(Math.abs(gamepad1.right_stick_x) > 0.3 || Math.abs(gamepad1.right_stick_y) > 0.3 || gamepad1.right_stick_button){
                 slowingDown = 4;
                 slowDownTurning = 3;
-            }
-            else{
+            } else if (slidePos > 100) {
+                slowingDown = 2;
+                slowDownTurning = 1.5;
+            } else{
                 slowingDown = 1;
                 slowDownTurning = 1;
             }
             //Gets gamepad input
             y = (-gamepad1.left_stick_y / slowingDown);
             x = (gamepad1.left_stick_x / slowingDown);
-            turnOffset = (gamepad1.left_trigger - gamepad1.right_trigger) * (2.5 / slowDownTurning);
+            turnOffset = (gamepad1.left_trigger - gamepad1.right_trigger) * (3.5 / slowDownTurning);
 
             frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rearLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -176,7 +177,7 @@ public class RobotController extends LinearOpMode{
                 double frontRightPower = (rotY - rotX + turnSpeed) / denominator;
                 double rearRightPower = (rotY + rotX + turnSpeed) / denominator;
                 //Stops motors from running if motor power is less then %5
-                if((Math.abs(frontLeftPower) < 0.05) & (Math.abs(rearLeftPower) < 0.05) & (Math.abs(frontRightPower) < 0.05) & (Math.abs(rearRightPower) < 0.05))
+                if((Math.abs(frontLeftPower) < 0.03) & (Math.abs(rearLeftPower) < 0.03) & (Math.abs(frontRightPower) < 0.03) & (Math.abs(rearRightPower) < 0.03))
                 {
                     frontLeftMotor.setPower(0);
                     rearLeftMotor.setPower(0);
@@ -211,9 +212,43 @@ public class RobotController extends LinearOpMode{
     boolean armPos = false;
     boolean slideResetOneShot = false;
     double slidePosError, slidePower = 0, lastSlidePower = 0, slidePowerIncr = 0.1;
+    boolean isPressed = false;
+    boolean movingDown = false;
     public void AttachmentController()
     {
-        //Sets slide and arm position when button is pressed
+        if(gamepad2.a && !armPos && !isPressed) {
+            slidePos = Constants.BOARD_BASE_HEIGHT;
+            armPos = true;
+            isPressed = true;
+        } else if (gamepad2.b && !armPos && !isPressed) {
+            slidePos = Constants.BOARD_BASE_HEIGHT + Constants.PIXEL_HEIGHT;
+            armPos = true;
+            isPressed = true;
+        } else if (gamepad2.y && !armPos && !isPressed) {
+            slidePos = Constants.BOARD_BASE_HEIGHT + 2 * Constants.PIXEL_HEIGHT;
+            armPos = true;
+            isPressed = true;
+        } else if(gamepad2.a && armPos && !isPressed && !(slidePos < Constants.BOARD_BASE_HEIGHT + Constants.PIXEL_HEIGHT)) {
+            slidePos = slidePos - Constants.PIXEL_HEIGHT;
+            isPressed = true;
+            movingDown = true;
+        } else if (gamepad2.b && armPos && !isPressed && !(slidePos > Constants.BOARD_BASE_HEIGHT + 8 * Constants.PIXEL_HEIGHT)) {
+            slidePos = slidePos + Constants.PIXEL_HEIGHT;
+            isPressed = true;
+        } else if (gamepad2.y && armPos && !isPressed && !(slidePos > Constants.BOARD_BASE_HEIGHT + 7 * Constants.PIXEL_HEIGHT)) {
+            slidePos = slidePos + 2 * Constants.PIXEL_HEIGHT;
+            isPressed = true;
+        }
+
+        if((!gamepad2.a && !gamepad2.b && !gamepad2.y) && isPressed){
+            isPressed = false;
+        }
+
+        if (gamepad2.x) {
+        slidePos = Constants.SLIDE_STACK_POS;
+        armPos = false;
+        }
+/*        //Sets slide and arm position when button is pressed
         if(gamepad2.a) {
             slidePos = Constants.SLIDE_LOW_POS;
             armPos = true;
@@ -226,15 +261,16 @@ public class RobotController extends LinearOpMode{
         } else if (gamepad2.x) {
             slidePos = Constants.SLIDE_STACK_POS;
             armPos = false;
-        }
+        }*/
         //Resets slide and arm positions
         if(gamepad2.dpad_down)
         {
+            movingDown = false;
             slidePos = 0;
             armPos = false;
             //Resets gripper position
-            leftGripper.OpenGripper();
-            rightGripper.OpenGripper();
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+            rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
         }
         //Manual slide movement
         slidePos += -gamepad2.left_stick_y * 55;
@@ -269,6 +305,21 @@ public class RobotController extends LinearOpMode{
             slideMotor1.setPower(slidePower);
             slideMotor2.setPower(slidePower);
         }
+        else if(movingDown) {
+            //Moves slides
+            slidePosError = slidePos - slideMotor1.getCurrentPosition();
+            slidePower = slidePosError * 1.25 / 500;
+            slidePower = Math.min(Math.max(slidePower, -0.2), 0.85);
+
+            if(slidePower - lastSlidePower > slidePowerIncr)
+            {
+                slidePower = lastSlidePower + slidePowerIncr;
+            }
+
+            slideMotor1.setPower(slidePower);
+            slideMotor2.setPower(slidePower);
+            telemetry.addData("slidePosError", slidePosError);
+        }
         else {
             //Moves slides
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
@@ -288,11 +339,20 @@ public class RobotController extends LinearOpMode{
         telemetry.addData("slideMotor1 Power", slideMotor1.getPower());
         telemetry.addData("slidePosition", slidePos);
         telemetry.addData("Current Slide Position", slideMotor1.getCurrentPosition());
-
         //Gripper controls
-        leftGripper.LeftGripperMaster(gamepad2.left_bumper, gamepad2.left_trigger > 0.5);
-        rightGripper.RightGripperMaster(gamepad2.right_bumper, gamepad2.right_trigger > 0.5);
+        if(gamepad2.left_bumper){
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+        }
+        else if(gamepad2.left_trigger > 0.5){
+            leftGripper.setPosition(Constants.GRIPPER_LEFT_CLOSE_POSITION);
+        }
 
+        if(gamepad2.right_bumper){
+            rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
+        }
+        else if(gamepad2.right_trigger > 0.5){
+            rightGripper.setPosition(Constants.GRIPPER_RIGHT_CLOSE_POSITION);
+        }
         //Sets arm position
         if(armPos || slideMotor1.getCurrentPosition() < 550)
         {
@@ -315,7 +375,7 @@ public class RobotController extends LinearOpMode{
         }
 
         // Rotation sensitivity
-        turnSpeed = 0.04 * turnError;
+        turnSpeed = 0.022 * turnError;
         // Keeps turning speed in a range
         turnSpeed = Math.min(Math.max(turnSpeed, -0.4), 0.4);
     }
