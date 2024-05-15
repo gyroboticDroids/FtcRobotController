@@ -255,7 +255,7 @@ public class RobotController extends LinearOpMode{
         }
 
         //Resets slide and arm positions
-        if(gamepad2.dpad_down)
+        if(gamepad2.dpad_down && (slidePos > 4 || armPos))
         {
 /*            movingDown = false;
             slidePos = 0;
@@ -267,7 +267,7 @@ public class RobotController extends LinearOpMode{
             if(leftGripper.getPosition() == Constants.GRIPPER_LEFT_CLOSE_POSITION || rightGripper.getPosition() == Constants.GRIPPER_RIGHT_CLOSE_POSITION) {
                 leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                 rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
-                sleep(500);
+                sleep(350);
             }
             frontLeftMotor.setPower(-0.1);
             frontRightMotor.setPower(-0.1);
@@ -285,6 +285,7 @@ public class RobotController extends LinearOpMode{
             rearRightMotor.setPower(-0.5);
             sleep(200);
             armPos = false;
+            movingDown = false;
             slidePos = 0;
         }
         //Manual slide movement
@@ -312,7 +313,6 @@ public class RobotController extends LinearOpMode{
         else if(gamepad2.start) {
             //Increases slide power when hanging
             slidePos = 1000;
-
             slidePosError = slidePos - slideMotor1.getCurrentPosition();
             slidePower = slidePosError * 5 / 500;
             slidePower = Math.min(Math.max(slidePower, -0.75), 0.75);
