@@ -107,7 +107,7 @@ public class RobotController extends LinearOpMode{
             }
             //Slows down robot move speed for better control
             if(Math.abs(gamepad1.right_stick_x) > 0.3 || Math.abs(gamepad1.right_stick_y) > 0.3 || gamepad1.right_stick_button){
-                slowingDown = 4;
+                slowingDown = 3;
                 slowDownTurning = 3;
             } else if (slidePos > 100) {
                 slowingDown = 2;
@@ -221,22 +221,27 @@ public class RobotController extends LinearOpMode{
             armPos = true;
             isPressed = true;
         } else if (gamepad2.b && !armPos && !isPressed) {
-            slidePos = Constants.BOARD_BASE_HEIGHT + Constants.PIXEL_HEIGHT;
+            slidePos = Constants.BOARD_BASE_HEIGHT + SnapToGrid(1);
             armPos = true;
             isPressed = true;
         } else if (gamepad2.y && !armPos && !isPressed) {
-            slidePos = Constants.BOARD_BASE_HEIGHT + 2 * Constants.PIXEL_HEIGHT;
+            slidePos = Constants.BOARD_BASE_HEIGHT + SnapToGrid(2);
             armPos = true;
             isPressed = true;
         } else if(gamepad2.a && armPos && !isPressed && !(slidePos < Constants.BOARD_BASE_HEIGHT + Constants.PIXEL_HEIGHT)) {
-            slidePos = slidePos - Constants.PIXEL_HEIGHT;
+            slidePos = SnapToGrid(-1);
             isPressed = true;
             movingDown = true;
         } else if (gamepad2.b && armPos && !isPressed && !(slidePos > Constants.BOARD_BASE_HEIGHT + 8 * Constants.PIXEL_HEIGHT)) {
-            slidePos = slidePos + Constants.PIXEL_HEIGHT;
+            slidePos = SnapToGrid(1);
             isPressed = true;
-        } else if (gamepad2.y && armPos && !isPressed && !(slidePos > Constants.BOARD_BASE_HEIGHT + 7 * Constants.PIXEL_HEIGHT)) {
-            slidePos = slidePos + 2 * Constants.PIXEL_HEIGHT;
+        } else if (gamepad2.y && armPos && !isPressed) {
+            if(!(slidePos > Constants.BOARD_BASE_HEIGHT + 7 * Constants.PIXEL_HEIGHT)) {
+                slidePos = SnapToGrid(2);
+            } else {
+                slidePos = SnapToGrid(1);
+            }
+
             isPressed = true;
         }
 
@@ -248,29 +253,39 @@ public class RobotController extends LinearOpMode{
         slidePos = Constants.SLIDE_STACK_POS;
         armPos = false;
         }
-/*        //Sets slide and arm position when button is pressed
-        if(gamepad2.a) {
-            slidePos = Constants.SLIDE_LOW_POS;
-            armPos = true;
-        } else if (gamepad2.b) {
-            slidePos = Constants.SLIDE_MEDIUM_POS;
-            armPos = true;
-        } else if (gamepad2.y) {
-            slidePos = Constants.SLIDE_HIGH_POS;
-            armPos = true;
-        } else if (gamepad2.x) {
-            slidePos = Constants.SLIDE_STACK_POS;
-            armPos = false;
-        }*/
+
         //Resets slide and arm positions
         if(gamepad2.dpad_down)
         {
-            movingDown = false;
+/*            movingDown = false;
             slidePos = 0;
             armPos = false;
             //Resets gripper position
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
-            rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
+            rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);*/
+
+            if(leftGripper.getPosition() == Constants.GRIPPER_LEFT_CLOSE_POSITION || rightGripper.getPosition() == Constants.GRIPPER_RIGHT_CLOSE_POSITION) {
+                leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
+                rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
+                sleep(500);
+            }
+            frontLeftMotor.setPower(-0.1);
+            frontRightMotor.setPower(-0.1);
+            rearLeftMotor.setPower(-0.1);
+            rearRightMotor.setPower(-0.1);
+
+            slideMotor1.setPower(0.35);
+            slideMotor2.setPower(0.35);
+
+            sleep(100);
+
+            frontLeftMotor.setPower(-0.5);
+            frontRightMotor.setPower(-0.5);
+            rearLeftMotor.setPower(-0.5);
+            rearRightMotor.setPower(-0.5);
+            sleep(200);
+            armPos = false;
+            slidePos = 0;
         }
         //Manual slide movement
         slidePos += -gamepad2.left_stick_y * 55;
@@ -405,5 +420,10 @@ public class RobotController extends LinearOpMode{
         else if(turnSetpoint < 0){
             turnSetpoint = turnSetpoint + 360;
         }
+    }
+
+    public int SnapToGrid(int numberOfPixels)
+    {
+        return (Math.round(slidePos / (float)Constants.PIXEL_HEIGHT) * Constants.PIXEL_HEIGHT) + (numberOfPixels * Constants.PIXEL_HEIGHT);
     }
 }
