@@ -46,7 +46,7 @@ import java.util.Objects;
  */
 @Config
 @Autonomous(group = "drive")
-@Disabled
+
 public class ManualFeedforwardTuner extends LinearOpMode {
     public static double DISTANCE = 72; // in
 
@@ -109,7 +109,7 @@ public class ManualFeedforwardTuner extends LinearOpMode {
                     // calculate and set the motor power
                     double profileTime = clock.seconds() - profileStart;
 
-                    if (profileTime > activeProfile.duration()) {
+                    if (profileTime > (activeProfile.duration()+3)) {
                         // generate a new profile
                         movingForwards = !movingForwards;
                         activeProfile = generateProfile(movingForwards);
