@@ -31,7 +31,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Disabled
 public class BackAndForth extends LinearOpMode {
 
-    public static double DISTANCE = 50;
+    public static double DISTANCE = 60;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -39,19 +39,24 @@ public class BackAndForth extends LinearOpMode {
 
         Trajectory trajectoryForward = drive.trajectoryBuilder(new Pose2d())
                 //.forward(DISTANCE)
-                .lineToConstantHeading(new Vector2d(DISTANCE,0))
+                //.lineToConstantHeading(new Vector2d(DISTANCE,0))
+                .lineToLinearHeading(new Pose2d(DISTANCE,0,0))
+                //.lineToLinearHeading(new Pose2d(0,DISTANCE,0)) //strafe
                 .build();
 
         Trajectory trajectoryBackward = drive.trajectoryBuilder(trajectoryForward.end())
                 //.back(DISTANCE)
-                .lineToConstantHeading(new Vector2d(0,0))
+                //.lineToConstantHeading(new Vector2d(0,0))
+                .lineToLinearHeading(new Pose2d(0,0,0))
                 .build();
 
         waitForStart();
 
         while (opModeIsActive() && !isStopRequested()) {
             drive.followTrajectory(trajectoryForward);
+            sleep(2000);
             drive.followTrajectory(trajectoryBackward);
+            sleep(2000);
         }
     }
 }
