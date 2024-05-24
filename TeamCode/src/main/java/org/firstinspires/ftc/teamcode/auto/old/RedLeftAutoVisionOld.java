@@ -21,9 +21,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name="Red Left Auto Vision", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
+@Autonomous(name="Red Left Auto Vision Old", group = "Centerstage Autonomous", preselectTeleOp = "RobotController")
 @Disabled
-public class RedLeftAutoVision extends LinearOpMode {
+public class RedLeftAutoVisionOld extends LinearOpMode {
     //Sets up motors and variables
     DistanceSensor leftSensor;
     DistanceSensor rightSensor;

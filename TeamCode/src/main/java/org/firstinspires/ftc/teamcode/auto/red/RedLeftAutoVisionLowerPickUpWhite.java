@@ -109,7 +109,7 @@ public class RedLeftAutoVisionLowerPickUpWhite extends LinearOpMode {
             selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
             selectTurn = 90;
             boardOffset = 4.5;
-            zeOffset = 3;
+            zeOffset = 4;
             waitTime = 0;
             desiredTagId = 4;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
@@ -122,7 +122,7 @@ public class RedLeftAutoVisionLowerPickUpWhite extends LinearOpMode {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
                     .back(5)
-                    .lineToLinearHeading(new Pose2d(-37, -15, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-37, -11, Math.toRadians(180)))
                     .build();
         } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(-32.5, -31.25,0);
@@ -149,7 +149,7 @@ public class RedLeftAutoVisionLowerPickUpWhite extends LinearOpMode {
             selectPose = new Pose2d(-35.5, -31.5, Math.toRadians(90));
             selectTurn = 180;
             boardOffset = -1.5;
-            zeOffset = 2.5;
+            zeOffset = 4;
             waitTime = 0;
             desiredTagId = 5;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())

@@ -132,7 +132,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
             selectPose = new Pose2d(-38.5, -31.25, Math.toRadians(180));
             selectTurn = 90;
             boardOffset = 6;
-            zeOffset = 0;
+            zeOffset = 0.75;
             desiredTagId = 4;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -144,7 +144,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
                     .back(5)
-                    .lineToLinearHeading(new Pose2d(-37, -15, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-37, -11, Math.toRadians(180)))
                     .build();
         } else if (rightSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(-32.5, -31.25,0);
