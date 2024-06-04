@@ -5,9 +5,11 @@ import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
@@ -24,6 +26,8 @@ public class TestTickDistance extends LinearOpMode {
     DcMotor rearLeftMotor;
     DcMotor frontRightMotor;
     DcMotor rearRightMotor;
+    DistanceSensor left;
+    DistanceSensor right;
     double armPosition = 0.501;
     double drone = 0.696;
     double gripper1 = 0.5;
@@ -46,6 +50,9 @@ public class TestTickDistance extends LinearOpMode {
         rearLeftMotor = hardwareMap.dcMotor.get("rearLeftMotor");
         frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
         rearRightMotor = hardwareMap.dcMotor.get("rearRightMotor");
+        //Sets sensors
+        left = hardwareMap.get(DistanceSensor.class, "checkLeft");
+        right = hardwareMap.get(DistanceSensor.class, "checkRight");
         AprilTagProcessor tagProcessor = new AprilTagProcessor.Builder()
                 .setDrawAxes(true)
                 .setDrawCubeProjection(true)
@@ -92,7 +99,8 @@ public class TestTickDistance extends LinearOpMode {
             telemetry.addData("Pod 3", frontRightMotor.getCurrentPosition());
             telemetry.addData("Pod 4", rearRightMotor.getCurrentPosition());
 
-
+            telemetry.addData("Left Distance Sensor", left.getDistance(DistanceUnit.CM));
+            telemetry.addData("Right Distance Sensor", right.getDistance(DistanceUnit.CM));
 
             telemetry.update();
 
