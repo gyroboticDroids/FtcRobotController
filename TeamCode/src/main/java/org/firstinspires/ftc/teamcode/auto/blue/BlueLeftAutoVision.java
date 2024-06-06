@@ -120,7 +120,7 @@ public class BlueLeftAutoVision extends LinearOpMode {
         } else if (leftSensor.getDistance(DistanceUnit.INCH) < 5) {
             selectPose = new Pose2d(14.75, 31.25,0);
             boardOffset = 4.5;
-            zeOffset = -1;
+            zeOffset = 0;
             desiredTagId = 1;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     .turn(Math.toRadians(90))
@@ -139,7 +139,7 @@ public class BlueLeftAutoVision extends LinearOpMode {
         } else {
             selectPose = new Pose2d(11.75, 31.5, Math.toRadians(-90));
             boardOffset = -1.5;
-            zeOffset = -0.5;
+            zeOffset = -2;
             desiredTagId = 2;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Drive up to proper spike mark

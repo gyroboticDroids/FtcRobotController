@@ -163,7 +163,9 @@ public class RedLeftAutoVisionThroughTruss extends LinearOpMode {
                         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
                     })
                     .back(7)
-                    .lineToLinearHeading(new Pose2d(-37, -58, Math.toRadians(0)))
+                    .turn(Math.toRadians(90))
+                    .lineToLinearHeading(new Pose2d(-37, -58, Math.toRadians(90)))
+                    .turn(Math.toRadians(-90))
                     .build();
         } else {
             selectTurn = 180;

@@ -150,7 +150,7 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
             selectTurn = -180;
             boardOffset = 0;
             zeOffset = 0;
-            waitTime = 1;
+            waitTime = 0;
             desiredTagId = 2;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -193,7 +193,7 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
         //  sleep(2147483647);
         TrajectorySequence actuallyPickUpWhitePixel = drive.trajectorySequenceBuilder(placePurplePixel.end())
                 //Drives into pixel stack
-                .splineToLinearHeading(new Pose2d(-60.5, 13.25, Math.toRadians(180)), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(-59.5, 13.75, Math.toRadians(180)), Math.toRadians(180))
                 .build();
         drive.followTrajectorySequence(actuallyPickUpWhitePixel);
 
