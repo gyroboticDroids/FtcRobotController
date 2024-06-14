@@ -255,7 +255,7 @@ public class RobotController extends LinearOpMode{
         }
 
         //Resets slide and arm positions
-        if(gamepad2.dpad_down && (slidePos > 4 || armPos))
+        if(gamepad2.dpad_down || gamepad1.left_bumper && (slidePos > 4 || armPos))
         {
 /*            movingDown = false;
             slidePos = 0;
