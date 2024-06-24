@@ -93,7 +93,32 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
 
         Constants.blueAuto = true;
 
-        waitForStart();
+        Constants.blueAuto = false;
+        boolean isPressed = false;
+        while (!isStarted() && !isStopRequested()) {
+            if(gamepad1.y && !isPressed){
+                waitTime += 0.5;
+                isPressed = true;
+            }
+            else if(gamepad1.a && !isPressed){
+                waitTime -= 0.5;
+                isPressed = true;
+            }
+            else if (!gamepad1.a && !gamepad1.y) {
+                isPressed = false;
+            }
+
+            if (waitTime > 3)
+                waitTime = 3;
+
+            if (waitTime < 0)
+                waitTime = 0;
+
+            telemetry.addData("Time Before Start", waitTime);
+            telemetry.update();
+        }
+
+        sleep(waitTime * 1000);
 
         //Move into spike mark area
         Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)
@@ -110,7 +135,6 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
             selectTurn = -90;
             boardOffset = -6;
             zeOffset = 0;
-            waitTime = 0;
             desiredTagId = 3;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -131,7 +155,6 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
             selectTurn = 90;
             boardOffset = 6;
             zeOffset = 0;
-            waitTime = 0;
             desiredTagId = 1;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -150,7 +173,6 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
             selectTurn = -180;
             boardOffset = 0;
             zeOffset = 0;
-            waitTime = 0;
             desiredTagId = 2;
             placePurplePixel = drive.trajectorySequenceBuilder(approachSpikeMarks.end())
                     //Turn to proper spike mark
@@ -249,10 +271,6 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
                 .build();
 
         drive.followTrajectorySequence(holdWhitePixel);
-
-
-        //Waits for teammate to finish
-        sleep(waitTime * 1000);
 
         TrajectorySequence driveToCenterOfField = drive.trajectorySequenceBuilder(holdWhitePixel.end())
                 //Drive towards center of field

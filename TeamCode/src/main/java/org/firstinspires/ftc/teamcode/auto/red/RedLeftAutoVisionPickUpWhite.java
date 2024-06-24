@@ -207,9 +207,10 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
             telemetry.update();
             lastSlidePower = slideMotor1.getPower();
         }
+        slideMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        slideMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slideMotor1.setPower(0);
         slideMotor2.setPower(0);
-      //  sleep(2147483647);
         TrajectorySequence actuallyPickUpWhitePixel = drive.trajectorySequenceBuilder(placePurplePixel.end())
                 //Drives into pixel stack
                 .splineToLinearHeading(new Pose2d(-60.5, -9.5, Math.toRadians(180)), Math.toRadians(180))
@@ -249,6 +250,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
         }
         slideMotor1.setPower(0);
         slideMotor2.setPower(0);
+
 
         //Opens grippers
         leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
@@ -359,7 +361,7 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
         if(desiredTagId == 4){
             //Drives forward to board
             Trajectory driveToBoard = drive.trajectoryBuilder(driveToCenterOfField.end())
-                    .lineToLinearHeading(new Pose2d(48 - ye, -32.5 - 15 /*# is white pixel offset*/ + boardOffset - ze, Math.toRadians(0 + pe)))
+                    .lineToLinearHeading(new Pose2d(49 - ye, -32.5 - 15 /*# is white pixel offset*/ + boardOffset - ze, Math.toRadians(0 + pe)))
                     .build();
             drive.followTrajectory(driveToBoard);
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
@@ -375,15 +377,15 @@ public class RedLeftAutoVisionPickUpWhite extends LinearOpMode {
         else {
             //Drives forward to board
             TrajectorySequence driveToBoard = drive.trajectorySequenceBuilder(driveToCenterOfField.end())
-                    .lineToLinearHeading(new Pose2d(48 - ye, -32.5 + boardOffset - ze, Math.toRadians(0 + pe)))
+                    .lineToLinearHeading(new Pose2d(49 - ye, -32.5 + boardOffset - ze, Math.toRadians(0 + pe)))
                     .build();
             drive.followTrajectorySequence(driveToBoard);
 
             //Opens grippers
             rightGripper.setPosition(Constants.GRIPPER_RIGHT_OPEN_POSITION);
             moveWhitePixel = drive.trajectorySequenceBuilder(driveToBoard.end())
-                    .back(2)
-                    .forward(2)
+                    .back(4)
+                    .forward(4)
                     .build();
             drive.followTrajectorySequence(moveWhitePixel);
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);

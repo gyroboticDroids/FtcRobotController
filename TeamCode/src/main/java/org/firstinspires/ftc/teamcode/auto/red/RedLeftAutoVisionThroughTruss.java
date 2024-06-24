@@ -106,8 +106,8 @@ public class RedLeftAutoVisionThroughTruss extends LinearOpMode {
                 isPressed = false;
             }
 
-            if (waitTime > 3)
-                waitTime = 3;
+            if (waitTime > 15)
+                waitTime = 15;
 
             if (waitTime < 0)
                 waitTime = 0;
@@ -272,7 +272,7 @@ public class RedLeftAutoVisionThroughTruss extends LinearOpMode {
 
         //Drives forward to board
         TrajectorySequence driveToBoard = drive.trajectorySequenceBuilder(driveToCenterOfField.end())
-                .lineToLinearHeading(new Pose2d(48 - ye, -31 + boardOffset - ze, Math.toRadians(0 + pe)))
+                .lineToLinearHeading(new Pose2d(49 - ye, -31 + boardOffset - ze, Math.toRadians(0 + pe)))
                 .build();
         drive.followTrajectorySequence(driveToBoard);
 

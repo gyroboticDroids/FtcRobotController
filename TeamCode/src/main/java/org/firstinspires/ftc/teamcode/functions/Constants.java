@@ -14,7 +14,7 @@ public class Constants {
     public static int SLIDE_LOW_POS = 1100;
     public static int SLIDE_MEDIUM_POS = 2100;
     public static int SLIDE_HIGH_POS = 3050;
-    public static int SLIDE_STACK_POS = 325;
+    public static int SLIDE_STACK_POS = 375;
     public static int PIXEL_HEIGHT = 332;
     public static int BOARD_BASE_HEIGHT = 225;
 
