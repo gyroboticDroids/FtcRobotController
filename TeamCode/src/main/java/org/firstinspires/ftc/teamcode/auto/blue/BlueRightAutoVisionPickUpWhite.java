@@ -93,7 +93,6 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
 
         Constants.blueAuto = true;
 
-        Constants.blueAuto = false;
         boolean isPressed = false;
         while (!isStarted() && !isStopRequested()) {
             if(gamepad1.y && !isPressed){
