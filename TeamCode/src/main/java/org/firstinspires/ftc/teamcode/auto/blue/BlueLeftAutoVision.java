@@ -43,7 +43,7 @@ public class BlueLeftAutoVision extends LinearOpMode {
     int desiredTagId;
     Servo droneLauncher;
     VisionPortal visionPortal;
-    long waitTime;
+    double waitTime;
 
     @Override
     public void runOpMode() throws InterruptedException

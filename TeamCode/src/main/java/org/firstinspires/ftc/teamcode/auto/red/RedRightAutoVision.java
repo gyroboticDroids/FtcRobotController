@@ -43,7 +43,7 @@ public class RedRightAutoVision extends LinearOpMode {
     int desiredTagId;
     Servo droneLauncher;
     VisionPortal visionPortal;
-    long waitTime;
+    double waitTime;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -114,7 +114,7 @@ public class RedRightAutoVision extends LinearOpMode {
             telemetry.update();
         }
 
-        sleep(waitTime * 1000);
+        sleep((long)waitTime * 1000);
 
         //Move into spike mark area
         Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)

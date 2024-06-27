@@ -42,7 +42,7 @@ public class RedLeftAutoVisionLowerPickUpWhite extends LinearOpMode {
     Servo arm;
     double slidePosError;
     double slidePower;
-    long waitTime;
+    double waitTime;
     int desiredTagId;
     Servo droneLauncher;
     VisionPortal visionPortal;
@@ -250,7 +250,7 @@ public class RedLeftAutoVisionLowerPickUpWhite extends LinearOpMode {
         drive.followTrajectorySequence(holdWhitePixel);
 
         //Waits for teammate to finish
-        sleep(waitTime * 1000);
+        sleep((long)waitTime * 1000);
 
         TrajectorySequence driveToCenterOfField = drive.trajectorySequenceBuilder(holdWhitePixel.end())
                 //Drive towards center of field

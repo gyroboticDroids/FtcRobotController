@@ -42,7 +42,7 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
     Servo arm;
     double slidePosError;
     double slidePower;
-    long waitTime;
+    double waitTime;
     int desiredTagId;
     Servo droneLauncher;
     VisionPortal visionPortal;
@@ -117,7 +117,7 @@ public class BlueRightAutoVisionPickUpWhite extends LinearOpMode {
             telemetry.update();
         }
 
-        sleep(waitTime * 1000);
+        sleep((long)waitTime * 1000);
 
         //Move into spike mark area
         Trajectory approachSpikeMarks = drive.trajectoryBuilder(startPose)

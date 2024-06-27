@@ -42,7 +42,7 @@ public class BlueRightAutoVisionLowerPickUpWhite extends LinearOpMode {
     Servo arm;
     double slidePosError;
     double slidePower;
-    long waitTime;
+    double waitTime;
     int desiredTagId;
     Servo droneLauncher;
     VisionPortal visionPortal;
