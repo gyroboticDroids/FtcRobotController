@@ -367,7 +367,7 @@ public class RedLeftAutoVisionLowerPickUpWhite extends LinearOpMode {
             slideMotor2.setPower(0);
             //Drives forward to board
             Trajectory driveToBoard = drive.trajectoryBuilder(driveToCenterOfField.end())
-                    .lineToLinearHeading(new Pose2d(48 - ye, -32.5 - 12 /*# is white pixel offset*/ + boardOffset - ze, Math.toRadians(0 + pe)))
+                    .lineToLinearHeading(new Pose2d(49 - ye, -32.5 - 12 /*# is white pixel offset*/ + boardOffset - ze, Math.toRadians(0 + pe)))
                     .build();
             drive.followTrajectory(driveToBoard);
             leftGripper.setPosition(Constants.GRIPPER_LEFT_OPEN_POSITION);
