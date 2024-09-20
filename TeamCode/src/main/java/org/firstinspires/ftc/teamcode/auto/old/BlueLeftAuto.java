@@ -23,7 +23,7 @@ public class BlueLeftAuto extends LinearOpMode {
     DistanceSensor rightSensor;
     Servo leftGripper;
     Servo rightGripper;
-    DcMotor slideMotor1;
+    AcMotor slideMotor1;
     DcMotor slideMotor2;
     Pose2d selectPose = new Pose2d(0,0,0);
     double selectTurn = 0;
